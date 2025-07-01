@@ -202,7 +202,7 @@ export function AccountRegistrationModal({
                     <FormControl>
                       <Input 
                         type="tel" 
-                        placeholder="+1 (555) 123-4567" 
+                        placeholder="+94 711877231"
                         {...field} 
                       />
                     </FormControl>

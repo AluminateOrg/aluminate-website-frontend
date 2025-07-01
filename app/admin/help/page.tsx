@@ -313,7 +313,7 @@ export default function HelpSupportPage() {
                         <Mail className="w-8 h-8 text-green-600" />
                         <div className="flex-1">
                           <h4 className="font-medium text-foreground">Email Support</h4>
-                          <p className="text-sm text-muted-foreground">support@alumniportal.com</p>
+                          <p className="text-sm text-muted-foreground">support@alumninate.com</p>
                         </div>
                         <Button size="sm" variant="outline">Send Email</Button>
                       </div>
@@ -322,7 +322,7 @@ export default function HelpSupportPage() {
                         <Phone className="w-8 h-8 text-purple-600" />
                         <div className="flex-1">
                           <h4 className="font-medium text-foreground">Phone Support</h4>
-                          <p className="text-sm text-muted-foreground">+1 (555) 123-4567</p>
+                          <p className="text-sm text-muted-foreground">+94 711877231</p>
                         </div>
                         <Button size="sm" variant="outline">Call Now</Button>
                       </div>

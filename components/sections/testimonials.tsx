@@ -5,27 +5,27 @@ import { Quote, Star } from 'lucide-react';
 
 const testimonials = [
   {
-    name: 'Dr. Sarah Mitchell',
+    name: 'Dr. Sarath Gunasekara',
     role: 'Alumni Relations Director',
-    organization: 'Stanford University',
+    organization: 'University of Moratuwa',
     content: 'The Alumni Portal System transformed how we engage with our 50,000+ alumni network. The dedicated cloud environment gives us complete control while the automation features save us countless hours.',
     rating: 5,
     avatar: 'SM',
     metrics: '50,000+ Alumni'
   },
   {
-    name: 'James Rodriguez',
+    name: 'Tharindu Perera',
     role: 'Executive Director',
-    organization: 'Global Business Alumni Network',
+    organization: 'Sri Lanka Business Alumni Network',
     content: 'Outstanding platform! The mentorship matching and event management features have increased our alumni engagement by 300%. The security and data isolation are exactly what we needed.',
     rating: 5,
     avatar: 'JR',
     metrics: '300% Engagement Increase'
   },
   {
-    name: 'Prof. Emily Chen',
-    role: 'Alumni Coordinator',
-    organization: 'MIT Alumni Association',
+    name: 'Prof. Nalin de Silva',
+    role: 'Head of research and Development',
+    organization: 'University of Kelaniya',
     content: 'From setup to daily operations, everything is seamless. The bulk onboarding saved us weeks of work, and the fundraising integration has helped us exceed our donation goals by 150%.',
     rating: 5,
     avatar: 'EC',
