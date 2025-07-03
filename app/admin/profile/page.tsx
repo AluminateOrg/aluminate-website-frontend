@@ -58,7 +58,7 @@ export default function ProfilePage() {
       const parsedUser = JSON.parse(userData);
       const fullUser = {
         ...parsedUser,
-        phone: '+1 (555) 123-4567',
+        phone: '+94 711877231',
         nationalId: 'NIC123456789',
         joinDate: '2023-08-15',
         lastLogin: '2024-01-15 10:30 AM',

@@ -72,15 +72,15 @@ export function Footer() {
             <div className="space-y-2 text-sm text-muted-foreground">
               <div className="flex items-center space-x-2">
                 <Mail className="w-4 h-4" />
-                <span>contact@alumniportal.com</span>
+                <span>contact@alumninate.com</span>
               </div>
               <div className="flex items-center space-x-2">
                 <Phone className="w-4 h-4" />
-                <span>+1 (555) 123-4567</span>
+                <span>+94 711877231</span>
               </div>
               <div className="flex items-center space-x-2">
                 <MapPin className="w-4 h-4" />
-                <span>San Francisco, CA</span>
+                <span>UCSC, SL</span>
               </div>
             </div>
           </div>
@@ -112,7 +112,7 @@ export function Footer() {
         {/* Bottom section */}
         <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
           <div className="text-sm text-muted-foreground">
-            © 2024 Alumni Portal System. All rights reserved.
+            © 2025 Alumni Portal System. All rights reserved.
           </div>
           
           {/* Social links */}

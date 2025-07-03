@@ -34,7 +34,7 @@ const contactOptions = [
     title: 'Phone Consultation',
     description: 'Speak directly with our alumni portal specialists',
     action: 'Call Now',
-    availability: '+1 (555) 123-4567'
+    availability: '+94 711877231'
   }
 ];
 
