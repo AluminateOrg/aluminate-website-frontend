@@ -1,29 +1,36 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Progress } from '@/components/ui/progress';
-import { 
-  Crown, 
-  Calendar, 
-  Users, 
-  CreditCard, 
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Progress } from "@/components/ui/progress";
+import {
+  Crown,
+  Calendar,
+  Users,
+  CreditCard,
   AlertTriangle,
   CheckCircle,
-  ArrowUpRight
-} from 'lucide-react';
+  ArrowUpRight,
+} from "lucide-react";
 
 export function SubscriptionDetails() {
   const subscriptionData = {
-    plan: 'Standard',
-    status: 'Active',
-    nextBilling: '2024-02-15',
-    amount: '$599',
+    plan: "Standard",
+    status: "Active",
+    nextBilling: "2024-02-15",
+    amount: "$599",
     memberLimit: 2000,
-    currentMembers: 2847,
-    daysUntilRenewal: 23
+    currentMembers: 1847,
+    daysUntilRenewal: 23,
   };
 
-  const isOverLimit = subscriptionData.currentMembers > subscriptionData.memberLimit;
+  const isOverLimit =
+    subscriptionData.currentMembers > subscriptionData.memberLimit;
 
   return (
     <Card>
@@ -41,7 +48,9 @@ export function SubscriptionDetails() {
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <div>
-              <h4 className="font-semibold text-foreground">{subscriptionData.plan} Plan</h4>
+              <h4 className="font-semibold text-foreground">
+                {subscriptionData.plan} Plan
+              </h4>
               <p className="text-sm text-muted-foreground">
                 {subscriptionData.amount}/month
               </p>
@@ -55,19 +64,32 @@ export function SubscriptionDetails() {
           {/* Member Usage */}
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <span className="text-sm font-medium text-foreground">Member Usage</span>
-              <span className={`text-sm ${isOverLimit ? 'text-red-600' : 'text-muted-foreground'}`}>
-                {subscriptionData.currentMembers.toLocaleString()} / {subscriptionData.memberLimit.toLocaleString()}
+              <span className="text-sm font-medium text-foreground">
+                Member Usage
+              </span>
+              <span
+                className={`text-sm ${
+                  isOverLimit ? "text-red-600" : "text-muted-foreground"
+                }`}
+              >
+                {subscriptionData.currentMembers.toLocaleString()} /{" "}
+                {subscriptionData.memberLimit.toLocaleString()}
               </span>
             </div>
-            <Progress 
-              value={(subscriptionData.currentMembers / subscriptionData.memberLimit) * 100} 
-              className={`h-2 ${isOverLimit ? 'bg-red-100' : ''}`}
+            <Progress
+              value={
+                (subscriptionData.currentMembers /
+                  subscriptionData.memberLimit) *
+                100
+              }
+              className={`h-2 ${isOverLimit ? "bg-red-100" : ""}`}
             />
             {isOverLimit && (
               <div className="flex items-center space-x-2 text-sm text-red-600">
                 <AlertTriangle className="w-4 h-4" />
-                <span>You've exceeded your member limit. Consider upgrading.</span>
+                <span>
+                  You've exceeded your member limit. Consider upgrading.
+                </span>
               </div>
             )}
           </div>
@@ -78,17 +100,25 @@ export function SubscriptionDetails() {
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-2">
               <Calendar className="w-4 h-4 text-muted-foreground" />
-              <span className="text-sm font-medium text-foreground">Next Billing</span>
+              <span className="text-sm font-medium text-foreground">
+                Next Billing
+              </span>
             </div>
-            <span className="text-sm text-foreground">{subscriptionData.nextBilling}</span>
+            <span className="text-sm text-foreground">
+              {subscriptionData.nextBilling}
+            </span>
           </div>
-          
+
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-2">
               <CreditCard className="w-4 h-4 text-muted-foreground" />
-              <span className="text-sm font-medium text-foreground">Amount</span>
+              <span className="text-sm font-medium text-foreground">
+                Amount
+              </span>
             </div>
-            <span className="text-sm font-semibold text-foreground">{subscriptionData.amount}</span>
+            <span className="text-sm font-semibold text-foreground">
+              {subscriptionData.amount}
+            </span>
           </div>
 
           <div className="text-center pt-2">
