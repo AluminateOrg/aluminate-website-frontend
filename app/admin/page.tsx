@@ -37,19 +37,6 @@ export default function AdminDashboard() {
     }
   }, [isAuthenticated, isLoading, router]);
 
-  // testing backend connectivity
-  const [pingResult, setPingResult] = useState<string | null>(null);
-  const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
-
-  useEffect(() => {
-    fetch(`${backendUrl}/ping`)
-      .then((res) => res.json())
-      .then((data) => {
-        setPingResult(data.status);
-      })
-      .catch(() => setPingResult("error"));
-  }, [backendUrl]);
-
   if (isLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
@@ -68,7 +55,6 @@ export default function AdminDashboard() {
   return (
     <div className="min-h-screen bg-background">
       <AdminHeader />
-      <h1>{pingResult}</h1>
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="space-y-8">
