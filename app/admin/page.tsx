@@ -1,14 +1,14 @@
 "use client";
 
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { AdminHeader } from '@/components/admin/admin-header';
-import { DashboardOverview } from '@/components/admin/dashboard-overview';
-import { ContainerStatus } from '@/components/admin/container-status';
-import { SubscriptionDetails } from '@/components/admin/subscription-details';
-import { PortalAccess } from '@/components/admin/portal-access';
-import { QuickActions } from '@/components/admin/quick-actions';
-import { RecentActivity } from '@/components/admin/recent-activity';
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { AdminHeader } from "@/components/admin/admin-header";
+import { DashboardOverview } from "@/components/admin/dashboard-overview";
+import { ContainerStatus } from "@/components/admin/container-status";
+import { SubscriptionDetails } from "@/components/admin/subscription-details";
+import { PortalAccess } from "@/components/admin/portal-access";
+import { QuickActions } from "@/components/admin/quick-actions";
+import { RecentActivity } from "@/components/admin/recent-activity";
 
 // Mock authentication check
 function useAuth() {
@@ -17,7 +17,7 @@ function useAuth() {
 
   useEffect(() => {
     // Simulate auth check
-    const authToken = localStorage.getItem('admin_token');
+    const authToken = localStorage.getItem("admin_token");
     setTimeout(() => {
       setIsAuthenticated(!!authToken);
       setIsLoading(false);
@@ -33,9 +33,22 @@ export default function AdminDashboard() {
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
-      router.push('/admin/login');
+      router.push("/admin/login");
     }
   }, [isAuthenticated, isLoading, router]);
+
+  // testing backend connectivity
+  const [pingResult, setPingResult] = useState<string | null>(null);
+  const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
+
+  useEffect(() => {
+    fetch(`${backendUrl}/ping`)
+      .then((res) => res.json())
+      .then((data) => {
+        setPingResult(data.status);
+      })
+      .catch(() => setPingResult("error"));
+  }, [backendUrl]);
 
   if (isLoading) {
     return (
@@ -55,12 +68,13 @@ export default function AdminDashboard() {
   return (
     <div className="min-h-screen bg-background">
       <AdminHeader />
-      
+      <h1>{pingResult}</h1>
+
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="space-y-8">
           {/* Dashboard Overview */}
           <DashboardOverview />
-          
+
           {/* Main Grid */}
           <div className="grid lg:grid-cols-3 gap-8">
             {/* Left Column */}
@@ -69,7 +83,7 @@ export default function AdminDashboard() {
               <PortalAccess />
               <RecentActivity />
             </div>
-            
+
             {/* Right Column */}
             <div className="space-y-8">
               <SubscriptionDetails />
