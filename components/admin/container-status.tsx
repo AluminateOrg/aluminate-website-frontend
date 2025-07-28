@@ -71,11 +71,11 @@ export function ContainerStatus() {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 p-4 bg-muted/50 rounded-lg">
           <div className="text-center">
             <div className="text-sm font-medium text-muted-foreground">Container ID</div>
-            <div className="text-sm font-mono text-foreground">cnt-stanford-001</div>
+            <div className="text-sm font-mono text-foreground">cnt-uoc-001</div>
           </div>
           <div className="text-center">
             <div className="text-sm font-medium text-muted-foreground">Region</div>
-            <div className="text-sm text-foreground">US-West-2</div>
+            <div className="text-sm text-foreground">LK-West-2</div>
           </div>
           <div className="text-center">
             <div className="text-sm font-medium text-muted-foreground">Uptime</div>

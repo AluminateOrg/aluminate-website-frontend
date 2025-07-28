@@ -21,7 +21,7 @@ const stats = [
   },
   {
     title: 'Donations Raised',
-    value: '$45,230',
+    value: 'LKR 45,230',
     change: '+23%',
     changeType: 'positive' as const,
     icon: DollarSign,

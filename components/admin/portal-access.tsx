@@ -15,8 +15,8 @@ import { toast } from 'sonner';
 
 export function PortalAccess() {
   const portalData = {
-    url: 'https://stanford-alumni.alumniportal.com',
-    customDomain: 'alumni.stanford.edu',
+    url: 'https://uoc-alumni.alumniportal.com',
+    customDomain: 'alumni.uoc.edu',
     status: 'Active',
     sslStatus: 'Secured',
     lastAccessed: '2 minutes ago'

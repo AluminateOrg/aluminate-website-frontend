@@ -16,7 +16,7 @@ const activities = [
     id: 1,
     type: 'member_joined',
     title: 'New member joined',
-    description: 'Sarah Johnson (Class of 2018) joined the portal',
+    description: 'Sheane Mario (Class of 2018) joined the portal',
     time: '5 minutes ago',
     icon: UserPlus,
     color: 'text-green-600'
@@ -34,7 +34,7 @@ const activities = [
     id: 3,
     type: 'donation_received',
     title: 'Donation received',
-    description: '$500 donation from Michael Chen',
+    description: 'LKR 500 donation from Michael Chen',
     time: '4 hours ago',
     icon: DollarSign,
     color: 'text-green-600'
