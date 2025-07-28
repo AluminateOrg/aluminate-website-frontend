@@ -127,7 +127,7 @@ export function Pricing() {
 
                   <div className="space-y-2">
                     <div className="text-4xl font-bold text-foreground">
-                      ${plan.price}
+                      LKR {plan.price}
                       <span className="text-lg font-normal text-muted-foreground">/month</span>
                     </div>
                     <Badge variant="secondary" className="text-xs">

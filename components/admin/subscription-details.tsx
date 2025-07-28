@@ -23,7 +23,7 @@ export function SubscriptionDetails() {
     plan: "Standard",
     status: "Active",
     nextBilling: "2024-02-15",
-    amount: "$599",
+    amount: "LKR 599",
     memberLimit: 2000,
     currentMembers: 1847,
     daysUntilRenewal: 23,
@@ -82,7 +82,7 @@ export function SubscriptionDetails() {
                   subscriptionData.memberLimit) *
                 100
               }
-              className={`h-2 ${isOverLimit ? "bg-red-100" : ""}`}
+              className={`h-2 LKR{isOverLimit ? "bg-red-100" : ""}`}
             />
             {isOverLimit && (
               <div className="flex items-center space-x-2 text-sm text-red-600">

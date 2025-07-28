@@ -27,10 +27,10 @@ import { toast } from 'sonner';
 export default function SettingsPage() {
   const [settings, setSettings] = useState({
     // General Settings
-    portalName: 'Stanford University Alumni Association',
-    portalDescription: 'Connecting Stanford alumni worldwide through shared experiences and opportunities.',
-    portalUrl: 'stanford-alumni.alumniportal.com',
-    customDomain: 'alumni.stanford.edu',
+    portalName: 'University of Colombo Alumni Association',
+    portalDescription: 'Connecting UOC alumni worldwide through shared experiences and opportunities.',
+    portalUrl: 'uoc-alumni.alumniportal.com',
+    customDomain: 'alumni.uoc.edu',
     
     // Branding
     primaryColor: '#3B82F6',
@@ -55,9 +55,9 @@ export default function SettingsPage() {
     discussionsEnabled: true,
     
     // Email Settings
-    senderName: 'Stanford Alumni Team',
-    senderEmail: 'noreply@alumni.stanford.edu',
-    replyToEmail: 'support@alumni.stanford.edu'
+    senderName: 'UOC Alumni Team',
+    senderEmail: 'noreply@alumni.uoc.edu',
+    replyToEmail: 'support@alumni.uoc.edu'
   });
 
   const handleSettingChange = (key: string, value: any) => {

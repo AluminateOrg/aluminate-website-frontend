@@ -28,8 +28,8 @@ export default function AdminLogin() {
         localStorage.setItem('admin_token', 'mock_token_' + Date.now());
         localStorage.setItem('admin_user', JSON.stringify({
           email,
-          name: 'John Smith',
-          organization: 'Stanford University Alumni Association',
+          name: 'Sheane Mario',
+          organization: 'University of Colombo Alumni Association',
           role: 'Organization Admin'
         }));
         
@@ -48,7 +48,7 @@ export default function AdminLogin() {
   };
 
   const handleDemoLogin = () => {
-    setEmail('admin@stanford.edu');
+    setEmail('admin@uoc.edu');
     setPassword('demo123');
   };
 

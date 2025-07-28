@@ -141,7 +141,7 @@ export function AccountRegistrationModal({
                     <FormLabel>Organization Name *</FormLabel>
                     <FormControl>
                       <Input 
-                        placeholder="e.g., Stanford University Alumni Association" 
+                        placeholder="e.g., University of Colombo Alumni Association"
                         {...field} 
                       />
                     </FormControl>
