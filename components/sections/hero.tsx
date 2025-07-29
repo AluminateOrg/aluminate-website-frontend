@@ -1,12 +1,25 @@
 "use client";
 
-import { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { ArrowRight, Play, Users, Shield, Zap, Globe } from 'lucide-react';
-import { AccountRegistrationModal } from '@/components/modals/account-registration-modal';
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { ArrowRight, Play, Users, Shield, Zap, Globe } from "lucide-react";
+import { AccountRegistrationModal } from "@/components/modals/account-registration-modal";
 
 export function Hero() {
   const [showRegistration, setShowRegistration] = useState(false);
+
+  const handleGetStarted = () => {
+    // Check if user is logged in
+    const authToken = localStorage.getItem("admin_token");
+
+    if (authToken) {
+      // User is logged in, redirect to checkout with Standard plan
+      window.location.href = `/checkout?plan=Standard`;
+    } else {
+      // User not logged in, show registration modal
+      setShowRegistration(true);
+    }
+  };
 
   return (
     <>
@@ -32,9 +45,10 @@ export function Hero() {
                 <span className="text-accent block">Engagement</span>
               </h1>
               <p className="text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
-                Transform your alumni network with dedicated cloud portal environments. 
-                Build active communities through mentorship, events, fundraising, and engagement 
-                tools—all with complete data isolation and organizational control.
+                Transform your alumni network with dedicated cloud portal
+                environments. Build active communities through mentorship,
+                events, fundraising, and engagement tools—all with complete data
+                isolation and organizational control.
               </p>
             </div>
 
@@ -56,17 +70,17 @@ export function Hero() {
 
             {/* CTAs */}
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center pt-4">
-              <Button 
-                size="lg" 
+              <Button
+                size="lg"
                 className="text-base font-semibold group"
-                onClick={() => setShowRegistration(true)}
+                onClick={handleGetStarted}
               >
                 Create Organization Account
                 <ArrowRight className="ml-2 w-4 h-4 group-hover:translate-x-1 transition-transform" />
               </Button>
-              <Button 
-                variant="outline" 
-                size="lg" 
+              <Button
+                variant="outline"
+                size="lg"
                 className="text-base font-semibold group"
               >
                 <Play className="mr-2 w-4 h-4" />
@@ -103,7 +117,7 @@ export function Hero() {
         </div>
       </section>
 
-      <AccountRegistrationModal 
+      <AccountRegistrationModal
         open={showRegistration}
         onOpenChange={setShowRegistration}
       />
