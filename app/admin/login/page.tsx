@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
@@ -9,6 +9,9 @@ import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Users, Eye, EyeOff, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
+import { useDispatch } from 'react-redux';
+import { setUser } from '@/redux/userSlice';
+import { useSelector } from 'react-redux';
 
 export default function AdminLogin() {
   const [email, setEmail] = useState('');
@@ -16,6 +19,9 @@ export default function AdminLogin() {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
+
+  const dispatch = useDispatch();
+
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -32,10 +38,38 @@ export default function AdminLogin() {
           organization: 'University of Colombo Alumni Association',
           role: 'Organization Admin'
         }));
-        
+
+
+        dispatch(setUser({
+          admin: {
+            id: 1,
+            name: 'sudda sudda',
+            email: email,
+            nic: '123456789V',
+            phone: '0712345678',
+            emailVerified: true,
+            createdAt: new Date().toISOString()
+          },
+          organization: {
+            id: 1,
+            organizationName: 'Stanford University Alumni Association',
+            subscriptionPlan: 'Premium',
+            createdAt: new Date().toISOString(),
+            nextRenewalDate: null,
+            subdomain: 'stanford',
+            portalUrl: 'https://stanford.alumniportal.com',
+            maxMemberCount: 1000,
+            currentMemberCount: 250,
+            status: 'ACTIVE',
+            isDeleted: false
+          }
+
+        }))
+
+
         // Dispatch custom event to notify other components of auth state change
         window.dispatchEvent(new Event('authStateChanged'));
-        
+
         toast.success('Login successful! Redirecting to dashboard...');
         setTimeout(() => {
           router.push('/admin');
@@ -64,7 +98,7 @@ export default function AdminLogin() {
           <div className="w-12 h-12 bg-accent rounded-lg flex items-center justify-center mx-auto">
             <Users className="w-6 h-6 text-white" />
           </div>
-          <h1 
+          <h1
             className="text-2xl font-bold text-foreground cursor-pointer hover:text-accent transition-colors"
             onClick={handleHomeNavigation}
             title="Click to go back to home page"

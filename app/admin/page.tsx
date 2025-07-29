@@ -9,6 +9,11 @@ import { SubscriptionDetails } from "@/components/admin/subscription-details";
 import { PortalAccess } from "@/components/admin/portal-access";
 import { QuickActions } from "@/components/admin/quick-actions";
 import { RecentActivity } from "@/components/admin/recent-activity";
+import { useSelector } from "react-redux";
+
+//get user from reedux
+
+
 
 // Mock authentication check
 function useAuth() {
@@ -27,6 +32,7 @@ function useAuth() {
   return { isAuthenticated, isLoading };
 }
 
+
 export default function AdminDashboard() {
   const { isAuthenticated, isLoading } = useAuth();
   const router = useRouter();
@@ -36,6 +42,7 @@ export default function AdminDashboard() {
       router.push("/admin/login");
     }
   }, [isAuthenticated, isLoading, router]);
+
 
   if (isLoading) {
     return (
