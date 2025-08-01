@@ -94,18 +94,15 @@ export function AccountRegistrationModal({
 
       if (response.status === 200 && responseData.success) {
         toast.success('Account created successfully!');
-        router.push('/admin/'); 
-        
+        router.push('/admin/');
+
       } else {
         toast.error(responseData.message || 'Registration failed. Please try again.');
         console.error('Registration error:', responseData);
       }
     } catch (error: any) {
-      if (error.response.status === 409) { // Conflict
         toast.error(error.response.data.message); // Shows specific message
-      } else {
-        toast.error("Something Went Wrong | Registration failed");
-      }
+
     } finally {
       setIsSubmitting(false);
     }

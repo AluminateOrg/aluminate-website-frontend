@@ -15,6 +15,7 @@ export default function ClientAuthGuard({ children }: Props) {
   const router = useRouter();
   const dispatch = useDispatch();
   const user = useSelector((state: any) => state.user);
+
   useEffect(() => {
     const checkAuth = async () => {
         //check if user is saved in redux store
@@ -25,9 +26,10 @@ export default function ClientAuthGuard({ children }: Props) {
         }
 
       try {
-        const res = await axiosAdmin.get('/getUser');
+        const res = await axiosAdmin.get('/info/getUser');
 
         if (res.status === 200 && res.data.success) {
+          
           dispatch(setUser({
             admin: res.data.admin,
             organization: res.data.organization,
@@ -37,6 +39,7 @@ export default function ClientAuthGuard({ children }: Props) {
         }
       } catch (err) {
         router.replace('/admin/login');
+
       } finally {
         setChecking(false);
       }
@@ -44,6 +47,8 @@ export default function ClientAuthGuard({ children }: Props) {
 
     checkAuth();
   }, []);
+
+  useEffect(() => {console.log("checking changed!",checking)},[checking])
 
   
 

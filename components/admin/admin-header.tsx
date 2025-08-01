@@ -17,6 +17,7 @@ import { NotificationsPanel } from '@/components/admin/notifications-panel';
 import { Users, Bell, Settings, LogOut, User, HelpCircle, Home } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
+import { useSelector } from 'react-redux';
 
 interface AdminUser {
   email: string;
@@ -28,11 +29,19 @@ interface AdminUser {
 export function AdminHeader() {
   const [user, setUser] = useState<AdminUser | null>(null);
   const router = useRouter();
+  const userData = useSelector((state: any) => state.user.admin);
+  const organizationData = useSelector((state: any) => state.user.organization);
 
   useEffect(() => {
-    const userData = localStorage.getItem('admin_user');
-    if (userData) {
-      setUser(JSON.parse(userData));
+    
+    
+    if (userData && organizationData) {
+      setUser({
+        email: userData.email,
+        name: userData.name,
+        organization: organizationData.organizationName,
+        role: 'Organization Admin', 
+      });
     }
   }, []);
 

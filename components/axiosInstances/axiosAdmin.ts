@@ -27,7 +27,6 @@ axiosAdmin.interceptors.request.use(config => {
   if (sessionId && config.headers) {
     config.headers["X-Session-Id"] = sessionId;
   }
-  console.log("Request Config:", config);
   return config;
 }, error => Promise.reject(error));
 

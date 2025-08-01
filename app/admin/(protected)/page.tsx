@@ -15,33 +15,20 @@ import { useSelector } from "react-redux";
 
 
 
-// Mock authentication check
-function useAuth() {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    // Simulate auth check
-    const authToken = localStorage.getItem("admin_token");
-    setTimeout(() => {
-      setIsAuthenticated(!!authToken);
-      setIsLoading(false);
-    }, 1000);
-  }, []);
-
-  return { isAuthenticated, isLoading };
-}
-
 
 export default function AdminDashboard() {
-  const { isAuthenticated, isLoading } = useAuth();
+  const [isLoading, setIsLoading] = useState(true);
+  const isAuthenticated = useSelector((state: any) => state.user.isAuthenticated);
   const router = useRouter();
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
       router.push("/admin/login");
     }
+    
   }, [isAuthenticated, isLoading, router]);
+
+  useEffect(() => {setIsLoading(false)},[isAuthenticated])
 
 
   if (isLoading) {
