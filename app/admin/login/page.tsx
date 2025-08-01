@@ -9,9 +9,9 @@ import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Users, Eye, EyeOff, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
-import { useDispatch } from 'react-redux';
-import { setUser } from '@/redux/userSlice';
-import { useSelector } from 'react-redux';
+// import { useDispatch } from 'react-redux';
+// import { setUser } from '@/redux/userSlice';
+// import { useSelector } from 'react-redux';
 
 export default function AdminLogin() {
   const [email, setEmail] = useState('');
@@ -20,7 +20,7 @@ export default function AdminLogin() {
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
 
-  const dispatch = useDispatch();
+  // const dispatch = useDispatch();
 
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -40,31 +40,31 @@ export default function AdminLogin() {
         }));
 
 
-        dispatch(setUser({
-          admin: {
-            id: 1,
-            name: 'sudda sudda',
-            email: email,
-            nic: '123456789V',
-            phone: '0712345678',
-            emailVerified: true,
-            createdAt: new Date().toISOString()
-          },
-          organization: {
-            id: 1,
-            organizationName: 'Stanford University Alumni Association',
-            subscriptionPlan: 'Premium',
-            createdAt: new Date().toISOString(),
-            nextRenewalDate: null,
-            subdomain: 'stanford',
-            portalUrl: 'https://stanford.alumniportal.com',
-            maxMemberCount: 1000,
-            currentMemberCount: 250,
-            status: 'ACTIVE',
-            isDeleted: false
-          }
+        // dispatch(setUser({
+        //   admin: {
+        //     id: 1,
+        //     name: 'sudda sudda',
+        //     email: email,
+        //     nic: '123456789V',
+        //     phone: '0712345678',
+        //     emailVerified: true,
+        //     createdAt: new Date().toISOString()
+        //   },
+        //   organization: {
+        //     id: 1,
+        //     organizationName: 'Stanford University Alumni Association',
+        //     subscriptionPlan: 'Premium',
+        //     createdAt: new Date().toISOString(),
+        //     nextRenewalDate: null,
+        //     subdomain: 'stanford',
+        //     portalUrl: 'https://stanford.alumniportal.com',
+        //     maxMemberCount: 1000,
+        //     currentMemberCount: 250,
+        //     status: 'ACTIVE',
+        //     isDeleted: false
+        //   }
 
-        }))
+        // }))
 
 
         // Dispatch custom event to notify other components of auth state change
