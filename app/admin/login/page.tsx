@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
@@ -9,6 +9,9 @@ import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Users, Eye, EyeOff, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
+import axios from 'axios';
+
+import axiosGlobal from '@/components/axiosInstances/axiosGlobal';
 
 export default function AdminLogin() {
   const [email, setEmail] = useState('');
@@ -17,35 +20,40 @@ export default function AdminLogin() {
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
 
+  
+
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
 
-    // Simulate login process
-    setTimeout(() => {
-      // Mock authentication - accept any email/password for demo
-      if (email && password) {
-        localStorage.setItem('admin_token', 'mock_token_' + Date.now());
-        localStorage.setItem('admin_user', JSON.stringify({
-          email,
-          name: 'Sheane Mario',
-          organization: 'University of Colombo Alumni Association',
-          role: 'Organization Admin'
-        }));
-        
-        // Dispatch custom event to notify other components of auth state change
-        window.dispatchEvent(new Event('authStateChanged'));
-        
-        toast.success('Login successful! Redirecting to dashboard...');
-        setTimeout(() => {
-          router.push('/admin');
-        }, 1000);
-      } else {
-        toast.error('Please enter both email and password');
+    try {
+      const res = await axiosGlobal.post('/auth/login', {
+        email,
+        password,
+      });
+
+      if (res.status !== 200) {
+        const errorText = res.data?.message || 'Invalid email or password';
+        toast.error(errorText);
+        return;
       }
+
+      
+
+      // Dispatch global login event if needed
+      window.dispatchEvent(new Event('authStateChanged'));
+
+      toast.success('Login successful!');
+      router.push('/admin/');
+    } catch (err: any) {
+      toast.error('Network error. Please try again.');
+      console.error(err);
+    } finally {
       setIsLoading(false);
-    }, 2000);
+    }
   };
+
 
   const handleDemoLogin = () => {
     setEmail('admin@uoc.edu');
@@ -64,7 +72,7 @@ export default function AdminLogin() {
           <div className="w-12 h-12 bg-accent rounded-lg flex items-center justify-center mx-auto">
             <Users className="w-6 h-6 text-white" />
           </div>
-          <h1 
+          <h1
             className="text-2xl font-bold text-foreground cursor-pointer hover:text-accent transition-colors"
             onClick={handleHomeNavigation}
             title="Click to go back to home page"

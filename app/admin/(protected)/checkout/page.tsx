@@ -95,16 +95,7 @@ export default function CheckoutPage() {
 
   const [user, setUser] = useState<AdminUser | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
-  const [paymentData, setPaymentData] = useState({
-    cardNumber: "",
-    expiryDate: "",
-    cvv: "",
-    cardholderName: "",
-    billingAddress: "",
-    city: "",
-    zipCode: "",
-    country: "United States",
-  });
+  
 
   useEffect(() => {
     // Check if user is logged in
@@ -116,6 +107,7 @@ export default function CheckoutPage() {
       return;
     }
 
+
     setUser(JSON.parse(userData));
   }, [router]);
 
@@ -126,94 +118,89 @@ export default function CheckoutPage() {
     return null;
   }
 
-  const handleInputChange = (field: string, value: string) => {
-    setPaymentData((prev) => ({
-      ...prev,
-      [field]: value,
-    }));
-  };
 
-  const formatCardNumber = (value: string) => {
-    const v = value.replace(/\s+/g, "").replace(/[^0-9]/gi, "");
-    const matches = v.match(/\d{4,16}/g);
-    const match = (matches && matches[0]) || "";
-    const parts = [];
-    for (let i = 0, len = match.length; i < len; i += 4) {
-      parts.push(match.substring(i, i + 4));
-    }
-    if (parts.length) {
-      return parts.join(" ");
-    } else {
-      return v;
-    }
-  };
-
-  const formatExpiryDate = (value: string) => {
-    const v = value.replace(/\s+/g, "").replace(/[^0-9]/gi, "");
-    if (v.length >= 2) {
-      return v.substring(0, 2) + "/" + v.substring(2, 4);
-    }
-    return v;
-  };
-
-  const handleCardNumberChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const formatted = formatCardNumber(e.target.value);
-    if (formatted.length <= 19) {
-      handleInputChange("cardNumber", formatted);
-    }
-  };
-
-  const handleExpiryChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const formatted = formatExpiryDate(e.target.value);
-    if (formatted.length <= 5) {
-      handleInputChange("expiryDate", formatted);
-    }
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsProcessing(true);
+  e.preventDefault();
+  setIsProcessing(true);
 
-    try {
-      // TODO: Integrate with actual payment processor (Stripe, etc.)
-      console.log("Processing payment:", {
-        plan: selectedPlan,
-        amount: plan.price,
-        user: user,
-        paymentData: paymentData,
-      });
+  try {
+    // 1. Call backend to get payment hash and transaction ID (order_id)
+    const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/payment/generate-hash`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        amount: plans[selectedPlan as keyof typeof plans].price,
+        currency: "LKR",
+        
+      }),
+    });
 
-      // Simulate payment processing
-      await new Promise((resolve) => setTimeout(resolve, 3000));
+    if (!response.ok) throw new Error("Failed to get payment hash");
 
-      // Update user's subscription in localStorage (in real app, this would be handled by backend)
-      const updatedUser = {
-        ...user,
-        subscription: {
-          plan: selectedPlan,
-          status: "active",
-          nextBilling: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
-            .toISOString()
-            .split("T")[0],
-          amount: plan.price,
-        },
+    const { hash, transaction_id } = await response.json();
+
+    console.log("Payment hash and transactionId received:", hash, transaction_id);
+
+    // 2. Prepare the PayHere payment object
+    const payment = {
+      sandbox: true, // set false in production
+      merchant_id: "YOUR_MERCHANT_ID", // Replace with your merchant ID or inject from env
+      return_url: `${window.location.origin}/payment-success`,
+      cancel_url: `${window.location.origin}/payment-cancel`,
+      notify_url: "https://yourdomain.com/api/v1/payment/notify", // your publicly accessible notify URL
+      order_id: transaction_id.toString(), // use transaction ID as order_id
+      items: `${selectedPlan} Plan Subscription`,
+      amount: plans[selectedPlan as keyof typeof plans].price.toFixed(2),
+      currency: "LKR",
+      hash: hash, // hash from backend
+      first_name: user.name.split(" ")[0] || user.name,
+      last_name: user.name.split(" ")[1] || "",
+      email: user.email,
+      phone: user.phone || "",
+      address: "",  // optional
+      city: "",     // optional
+      country: "Sri Lanka", // or dynamically from user profile
+      // add any other optional fields if needed
+    };
+
+    // 3. Load PayHere script and start payment
+    if (typeof window !== "undefined" && (window as any).payhere) {
+      (window as any).payhere.startPayment(payment);
+    } else {
+      // If payhere script not loaded yet, dynamically load it then start payment
+      const script = document.createElement("script");
+      script.src = "https://www.payhere.lk/lib/payhere.js";
+      script.onload = () => {
+        (window as any).payhere.startPayment(payment);
       };
-      localStorage.setItem("admin_user", JSON.stringify(updatedUser));
-
-      toast.success(
-        "Payment successful! Your subscription has been activated."
-      );
-
-      // Redirect to dashboard
-      setTimeout(() => {
-        router.push("/admin");
-      }, 2000);
-    } catch (error) {
-      toast.error("Payment failed. Please try again.");
-    } finally {
-      setIsProcessing(false);
+      document.body.appendChild(script);
     }
-  };
+
+    // Set up event handlers (optional)
+    (window as any).payhere.onCompleted = function (orderId: string) {
+      console.log("Payment completed. Order ID:", orderId);
+      toast.success("Payment completed successfully!");
+      // Optionally redirect or refresh status
+    };
+
+    (window as any).payhere.onDismissed = function () {
+      console.log("Payment dismissed");
+      toast.error("Payment was cancelled.");
+    };
+
+    (window as any).payhere.onError = function (error: any) {
+      console.error("PayHere Error:", error);
+      toast.error("Payment error occurred. Please try again.");
+    };
+  } catch (error) {
+    console.error("Payment error:", error);
+    toast.error("Failed to initiate payment");
+  } finally {
+    setIsProcessing(false);
+  }
+};
+
 
   const handleBackToPricing = () => {
     router.push("/#pricing");
@@ -267,7 +254,7 @@ export default function CheckoutPage() {
               <CardContent className="space-y-4">
                 <div className="flex items-center justify-between">
                   <span className="text-2xl font-bold text-foreground">
-                    ${plan.price}/month
+                    LKR {plan.price}/month
                   </span>
                   <Badge variant="secondary">{plan.memberLimit}</Badge>
                 </div>
@@ -301,7 +288,7 @@ export default function CheckoutPage() {
                 <div className="space-y-2">
                   <div className="flex justify-between text-sm">
                     <span>Subtotal</span>
-                    <span>${plan.price}</span>
+                    <span>LKR {plan.price}</span>
                   </div>
                   <div className="flex justify-between text-sm">
                     <span>Setup Fee</span>
@@ -309,7 +296,7 @@ export default function CheckoutPage() {
                   </div>
                   <div className="flex justify-between font-semibold">
                     <span>Total (Monthly)</span>
-                    <span>${plan.price}</span>
+                    <span>LKR {plan.price}</span>
                   </div>
                 </div>
               </CardContent>
@@ -343,127 +330,12 @@ export default function CheckoutPage() {
               <CardHeader>
                 <CardTitle className="flex items-center space-x-2">
                   <CreditCard className="w-5 h-5" />
-                  <span>Payment Information</span>
+                  <span>Payment</span>
                 </CardTitle>
-                <CardDescription>
-                  Your payment information is secure and encrypted
-                </CardDescription>
+
               </CardHeader>
               <CardContent>
                 <form onSubmit={handleSubmit} className="space-y-4">
-                  {/* Card Information */}
-                  <div className="space-y-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="cardNumber">Card Number</Label>
-                      <Input
-                        id="cardNumber"
-                        placeholder="1234 5678 9012 3456"
-                        value={paymentData.cardNumber}
-                        onChange={handleCardNumberChange}
-                        required
-                      />
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <Label htmlFor="expiryDate">Expiry Date</Label>
-                        <Input
-                          id="expiryDate"
-                          placeholder="MM/YY"
-                          value={paymentData.expiryDate}
-                          onChange={handleExpiryChange}
-                          required
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="cvv">CVV</Label>
-                        <Input
-                          id="cvv"
-                          placeholder="123"
-                          maxLength={4}
-                          value={paymentData.cvv}
-                          onChange={(e) =>
-                            handleInputChange(
-                              "cvv",
-                              e.target.value.replace(/\D/g, "")
-                            )
-                          }
-                          required
-                        />
-                      </div>
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="cardholderName">Cardholder Name</Label>
-                      <Input
-                        id="cardholderName"
-                        placeholder="John Smith"
-                        value={paymentData.cardholderName}
-                        onChange={(e) =>
-                          handleInputChange("cardholderName", e.target.value)
-                        }
-                        required
-                      />
-                    </div>
-                  </div>
-
-                  <Separator />
-
-                  {/* Billing Address */}
-                  <div className="space-y-4">
-                    <h4 className="font-medium text-foreground">
-                      Billing Address
-                    </h4>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="billingAddress">Address</Label>
-                      <Input
-                        id="billingAddress"
-                        placeholder="123 Main Street"
-                        value={paymentData.billingAddress}
-                        onChange={(e) =>
-                          handleInputChange("billingAddress", e.target.value)
-                        }
-                        required
-                      />
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <Label htmlFor="city">City</Label>
-                        <Input
-                          id="city"
-                          placeholder="San Francisco"
-                          value={paymentData.city}
-                          onChange={(e) =>
-                            handleInputChange("city", e.target.value)
-                          }
-                          required
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="zipCode">ZIP Code</Label>
-                        <Input
-                          id="zipCode"
-                          placeholder="94105"
-                          value={paymentData.zipCode}
-                          onChange={(e) =>
-                            handleInputChange("zipCode", e.target.value)
-                          }
-                          required
-                        />
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Security Notice */}
-                  <Alert>
-                    <Shield className="h-4 w-4" />
-                    <AlertDescription>
-                      Your payment information is encrypted and secure. We use
-                      industry-standard SSL encryption.
-                    </AlertDescription>
-                  </Alert>
 
                   {/* Submit Button */}
                   <Button
@@ -475,12 +347,12 @@ export default function CheckoutPage() {
                     {isProcessing ? (
                       <>
                         <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                        Processing Payment...
+                        Opening Payhere gateway...
                       </>
                     ) : (
                       <>
                         <Lock className="w-4 h-4 mr-2" />
-                        Complete Payment - ${plan.price}/month
+                        Pay by Payhere - LKR {plan.price}/month
                       </>
                     )}
                   </Button>

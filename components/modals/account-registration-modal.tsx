@@ -25,6 +25,8 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Loader2, Building, User, Mail, Phone, CreditCard, Shield } from 'lucide-react';
 import { toast } from 'sonner';
+import axiosGlobal from '../axiosInstances/axiosGlobal';
+import { useRouter } from 'next/navigation';
 
 // Form validation schema
 const registrationSchema = z.object({
@@ -48,13 +50,15 @@ interface AccountRegistrationModalProps {
   selectedPlan?: string | null;
 }
 
-export function AccountRegistrationModal({ 
-  open, 
+export function AccountRegistrationModal({
+  open,
   onOpenChange,
-  selectedPlan 
+  selectedPlan
 }: AccountRegistrationModalProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [step, setStep] = useState(1);
+
+  const router = useRouter();
 
   const form = useForm<RegistrationFormData>({
     resolver: zodResolver(registrationSchema),
@@ -69,32 +73,41 @@ export function AccountRegistrationModal({
     },
   });
 
+
+
+
   const onSubmit = async (data: RegistrationFormData) => {
     setIsSubmitting(true);
-    
+
     try {
-      // TODO: Replace with actual API call to backend
-      console.log('Registration data:', data);
-      console.log('Selected plan:', selectedPlan);
-      
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      toast.success('Account created successfully! Redirecting to subscription...');
-      
-      // TODO: Redirect to subscription/payment page
-      setTimeout(() => {
-        onOpenChange(false);
-        form.reset();
-        setStep(1);
-      }, 1000);
-      
-    } catch (error) {
-      toast.error('Registration failed. Please try again.');
+      const response = await axiosGlobal.post('/auth/register', {
+        organizationName: data.organizationName,
+        adminFullName: data.adminFullName,
+        email: data.email,
+        phoneNumber: data.phoneNumber,
+        nationalId: data.nationalId,
+        password: data.password,
+
+      });
+
+      const responseData = response.data;
+
+      if (response.status === 200 && responseData.success) {
+        toast.success('Account created successfully!');
+        router.push('/admin/');
+
+      } else {
+        toast.error(responseData.message || 'Registration failed. Please try again.');
+        console.error('Registration error:', responseData);
+      }
+    } catch (error: any) {
+        toast.error(error.response.data.message); // Shows specific message
+
     } finally {
       setIsSubmitting(false);
     }
   };
+
 
   const handleClose = () => {
     if (!isSubmitting) {
@@ -113,10 +126,10 @@ export function AccountRegistrationModal({
             <span>Create Organization Account</span>
           </DialogTitle>
           <DialogDescription>
-            Register your organization to get started with the Alumni Portal System. 
+            Register your organization to get started with the Alumni Portal System.
             This account will serve as your Organization Admin identity.
           </DialogDescription>
-          
+
           {selectedPlan && (
             <Badge className="w-fit">
               Selected Plan: {selectedPlan}
@@ -132,7 +145,7 @@ export function AccountRegistrationModal({
                 <Building className="w-4 h-4" />
                 <span>Organization Information</span>
               </div>
-              
+
               <FormField
                 control={form.control}
                 name="organizationName"
@@ -140,9 +153,9 @@ export function AccountRegistrationModal({
                   <FormItem>
                     <FormLabel>Organization Name *</FormLabel>
                     <FormControl>
-                      <Input 
+                      <Input
                         placeholder="e.g., University of Colombo Alumni Association"
-                        {...field} 
+                        {...field}
                       />
                     </FormControl>
                     <FormMessage />
@@ -179,10 +192,10 @@ export function AccountRegistrationModal({
                   <FormItem>
                     <FormLabel>Email Address *</FormLabel>
                     <FormControl>
-                      <Input 
-                        type="email" 
-                        placeholder="admin@organization.edu" 
-                        {...field} 
+                      <Input
+                        type="email"
+                        placeholder="admin@organization.edu"
+                        {...field}
                       />
                     </FormControl>
                     <FormDescription>
@@ -200,10 +213,10 @@ export function AccountRegistrationModal({
                   <FormItem>
                     <FormLabel>Phone Number (Optional)</FormLabel>
                     <FormControl>
-                      <Input 
-                        type="tel" 
+                      <Input
+                        type="tel"
                         placeholder="+94 711877231"
-                        {...field} 
+                        {...field}
                       />
                     </FormControl>
                     <FormDescription>
@@ -291,8 +304,8 @@ export function AccountRegistrationModal({
               >
                 Cancel
               </Button>
-              <Button 
-                type="submit" 
+              <Button
+                type="submit"
                 disabled={isSubmitting}
                 className="flex-1"
               >

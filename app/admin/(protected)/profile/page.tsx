@@ -23,6 +23,7 @@ import {
   Camera
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { useSelector } from 'react-redux';
 
 interface AdminUser {
   email: string;
@@ -51,23 +52,26 @@ export default function ProfilePage() {
     bio: ''
   });
 
-  useEffect(() => {
-    // Load user data from localStorage or API
-    const userData = localStorage.getItem('admin_user');
-    if (userData) {
-      const parsedUser = JSON.parse(userData);
-      const fullUser = {
-        ...parsedUser,
-        phone: '+94 711877231',
-        nationalId: 'NIC123456789',
-        joinDate: '2023-08-15',
-        lastLogin: '2024-01-15 10:30 AM',
-        bio: 'Dedicated alumni relations professional with over 10 years of experience in community building and engagement. Passionate about connecting alumni and fostering lifelong relationships.'
-      };
-      setUser(fullUser);
-      setFormData(fullUser);
-    }
-  }, []);
+  const userGlobal = useSelector((state: any) => state.user);
+  const userRedux = userGlobal?.admin;
+  const organizationRedux = userGlobal?.organization;
+
+useEffect(() => {
+  const userData = userRedux;
+  if (userData) {
+    const fullUser = {
+      ...userData,
+      phone: '+94 711877231',
+      nationalId: 'NIC123456789',
+      joinDate: '2023-08-15',
+      lastLogin: '2024-01-15 10:30 AM',
+      bio: 'Dedicated alumni relations professional with over 10 years of experience in community building and engagement. Passionate about connecting alumni and fostering lifelong relationships.'
+    };
+    setUser(fullUser);
+    setFormData({...fullUser,organization: organizationRedux?.organizationName || '',role: userData?.role || 'Organization Admin'});
+  }
+}, []);
+
 
   const handleEdit = () => {
     setIsEditing(true);
