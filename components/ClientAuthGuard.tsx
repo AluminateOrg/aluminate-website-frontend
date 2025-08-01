@@ -18,28 +18,28 @@ export default function ClientAuthGuard({ children }: Props) {
 
   useEffect(() => {
     const checkAuth = async () => {
-        //check if user is saved in redux store
-        
-        if (user.isAuthenticated) {
-          setChecking(false);
-          return;
-        }
+      if (user?.isAuthenticated) {
+        setChecking(false);
+
+        return;
+      }
 
       try {
-        const res = await axiosAdmin.get('/info/getUser');
+        const res = await axiosAdmin.get('/info/getUser', {
+          withCredentials: true,
+        });
 
         if (res.status === 200 && res.data.success) {
-          
           dispatch(setUser({
-            admin: res.data.admin,
-            organization: res.data.organization,
+            admin: res.data.data.admin,
+            organization: res.data.data.organization,
           }));
+          
         } else {
           router.replace('/admin/login');
         }
       } catch (err) {
         router.replace('/admin/login');
-
       } finally {
         setChecking(false);
       }
@@ -48,9 +48,10 @@ export default function ClientAuthGuard({ children }: Props) {
     checkAuth();
   }, []);
 
-  useEffect(() => {console.log("checking changed!",checking)},[checking])
-
-  
+  if (checking) {
+    // You can return a spinner here if you want
+    return null;
+  }
 
   return <>{children}</>;
 }

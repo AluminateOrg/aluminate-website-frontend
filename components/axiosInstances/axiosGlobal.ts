@@ -7,7 +7,6 @@ const axiosGlobal = axios.create({
   baseURL: apiUrl,
   withCredentials: true, 
 });
-console.log("calling axiosGlobal with baseURL:", apiUrl);
 // No interceptor needed for CSRF here
 
 export default axiosGlobal;

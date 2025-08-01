@@ -18,6 +18,7 @@ import { Users, Bell, Settings, LogOut, User, HelpCircle, Home } from 'lucide-re
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { useSelector } from 'react-redux';
+import axiosGlobal from '../axiosInstances/axiosGlobal';
 
 interface AdminUser {
   email: string;
@@ -29,27 +30,36 @@ interface AdminUser {
 export function AdminHeader() {
   const [user, setUser] = useState<AdminUser | null>(null);
   const router = useRouter();
-  const userData = useSelector((state: any) => state.user.admin);
-  const organizationData = useSelector((state: any) => state.user.organization);
+  const userGlobal = useSelector((state: any) => state.user);
+  const organizationData = userGlobal?.organization;
+  const userData = userGlobal?.admin;
 
-  useEffect(() => {
-    
-    
-    if (userData && organizationData) {
-      setUser({
-        email: userData.email,
-        name: userData.name,
-        organization: organizationData.organizationName,
-        role: 'Organization Admin', 
-      });
+ useEffect(() => {
+  if (userData && organizationData) {
+    setUser({
+      email: userData.email,
+      name: userData.name,
+      organization: organizationData.organizationName,
+      role: 'Organization Admin',
+    });
+  }
+}, [userData, organizationData]);
+
+
+  const handleLogout = async () => {
+    try {
+      
+      const res = await axiosGlobal.post('/auth/logout');
+      if (res.status === 200) {
+        toast.success('Logged out successfully');
+        router.push('/admin/login');
+      }
+
+    } catch (error) {
+      console.error('Logout failed:', error);
+      toast.error('Failed to log out. Please try again.');
     }
-  }, []);
 
-  const handleLogout = () => {
-    localStorage.removeItem('admin_token');
-    localStorage.removeItem('admin_user');
-    toast.success('Logged out successfully');
-    router.push('/admin/login');
   };
 
   const handleProfileClick = () => {
@@ -96,9 +106,9 @@ export function AdminHeader() {
           {/* Right side */}
           <div className="flex items-center space-x-4">
             {/* Back to Home Button */}
-            <Button 
-              variant="ghost" 
-              size="sm" 
+            <Button
+              variant="ghost"
+              size="sm"
               onClick={handleHomeClick}
               className="text-sm font-medium hidden sm:flex items-center space-x-2"
             >
@@ -107,9 +117,9 @@ export function AdminHeader() {
             </Button>
 
             {/* Mobile Home Button */}
-            <Button 
-              variant="ghost" 
-              size="sm" 
+            <Button
+              variant="ghost"
+              size="sm"
               onClick={handleHomeClick}
               className="sm:hidden p-2"
               title="Back to Home"
