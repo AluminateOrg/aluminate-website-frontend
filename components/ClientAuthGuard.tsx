@@ -5,22 +5,42 @@ import { useRouter } from 'next/navigation';
 import axiosAdmin from '@/components/axiosInstances/axiosAdmin';
 import { useDispatch, useSelector } from 'react-redux';
 import { setUser } from '@/redux/userSlice';
+import axiosGlobal from './axiosInstances/axiosGlobal';
+import {useAuthChecking} from '../context/AuthContext';
 
 interface Props {
   children: React.ReactNode;
 }
 
 export default function ClientAuthGuard({ children }: Props) {
-  const [checking, setChecking] = useState(true);
+  
   const router = useRouter();
   const dispatch = useDispatch();
   const user = useSelector((state: any) => state.user);
+  const { checking, setChecking } = useAuthChecking();
+
+  const handleLogout = async () => {
+    try {
+      
+      const res = await axiosGlobal.post('/auth/logout');
+      if (res.status === 200) {
+       
+        router.push('/admin/login');
+      }
+
+    } catch (error) {
+      console.error('Logout failed:', error);
+      
+    }
+
+  };
 
   useEffect(() => {
+    
     const checkAuth = async () => {
       if (user?.isAuthenticated) {
         setChecking(false);
-
+        
         return;
       }
 
@@ -36,12 +56,15 @@ export default function ClientAuthGuard({ children }: Props) {
           }));
           
         } else {
-          router.replace('/admin/login');
+          console.log('User not authenticated, redirecting to login');
+          handleLogout();
         }
       } catch (err) {
-        router.replace('/admin/login');
+        console.log('User not authenticated, redirecting to login');
+        handleLogout();
       } finally {
         setChecking(false);
+        console.log('Auth check completed');
       }
     };
 

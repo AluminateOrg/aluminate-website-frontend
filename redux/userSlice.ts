@@ -10,7 +10,7 @@ interface Organization {
   portalUrl: string;
   maxMemberCount: number;
   currentMemberCount: number;
-  status: 'ACTIVE' | 'INACTIVE' | 'SUSPENDED' | string; // add other statuses as needed
+  status: 'ACTIVE' | 'INACTIVE' | 'SUSPENDED' | string; 
   isDeleted: boolean;
 }
 
