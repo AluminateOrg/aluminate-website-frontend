@@ -20,7 +20,7 @@ export default function AdminLogin() {
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
 
-  
+
 
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -39,7 +39,7 @@ export default function AdminLogin() {
         return;
       }
 
-      
+
 
       // Dispatch global login event if needed
       window.dispatchEvent(new Event('authStateChanged'));
@@ -47,18 +47,25 @@ export default function AdminLogin() {
       toast.success('Login successful!');
       router.push('/admin/');
     } catch (err: any) {
-      toast.error('Network error. Please try again.');
-      console.error(err);
-    } finally {
+      const message = err?.response?.data?.message;
+      console.error('Login error checkinggggg:', err);
+
+      if (message) {
+        toast.error(message); 
+      } else {
+        toast.error('Something went wrong. Please try again.');
+      }
+
+      console.error('Error during login:', err);
+    }
+
+    finally {
       setIsLoading(false);
     }
   };
 
 
-  const handleDemoLogin = () => {
-    setEmail('admin@uoc.edu');
-    setPassword('demo123');
-  };
+
 
   const handleHomeNavigation = () => {
     router.push('/');
@@ -82,12 +89,6 @@ export default function AdminLogin() {
           <p className="text-muted-foreground">Sign in to your organization dashboard</p>
         </div>
 
-        {/* Demo Notice */}
-        <Alert>
-          <AlertDescription>
-            <strong>Demo Mode:</strong> Use any email/password combination or click "Use Demo Credentials\" below.
-          </AlertDescription>
-        </Alert>
 
         {/* Login Form */}
         <Card>
@@ -150,15 +151,7 @@ export default function AdminLogin() {
                   )}
                 </Button>
 
-                <Button
-                  type="button"
-                  variant="outline"
-                  className="w-full"
-                  onClick={handleDemoLogin}
-                  disabled={isLoading}
-                >
-                  Use Demo Credentials
-                </Button>
+
               </div>
             </form>
 

@@ -16,7 +16,7 @@ import { AccountRegistrationModal } from "@/components/modals/account-registrati
 const plans = [
   {
     name: "Basic",
-    price: 299,
+    price: 18000,
     description: "Perfect for small alumni groups and organizations",
     icon: Zap,
     popular: false,
@@ -34,7 +34,7 @@ const plans = [
   },
   {
     name: "Standard",
-    price: 599,
+    price: 30000,
     description: "Ideal for growing alumni communities",
     icon: Star,
     popular: true,
@@ -54,7 +54,7 @@ const plans = [
   },
   {
     name: "Premium",
-    price: 999,
+    price: 98000,
     description: "Complete solution for large alumni networks",
     icon: Crown,
     popular: false,
@@ -75,22 +75,6 @@ const plans = [
 ];
 
 export function Pricing() {
-  const [showRegistration, setShowRegistration] = useState(false);
-  const [selectedPlan, setSelectedPlan] = useState<string | null>(null);
-
-  const handlePlanSelect = (planName: string) => {
-    // Check if user is logged in
-    const authToken = localStorage.getItem("admin_token");
-
-    if (authToken) {
-      // User is logged in, redirect to checkout
-      window.location.href = `/checkout?plan=${encodeURIComponent(planName)}`;
-    } else {
-      // User not logged in, show registration modal
-      setSelectedPlan(planName);
-      setShowRegistration(true);
-    }
-  };
 
   return (
     <>
@@ -149,7 +133,7 @@ export function Pricing() {
 
                   <div className="space-y-2">
                     <div className="text-4xl font-bold text-foreground">
-                      ${plan.price}
+                      LKR {plan.price.toLocaleString("en-LK")}
                       <span className="text-lg font-normal text-muted-foreground">
                         /month
                       </span>
@@ -175,15 +159,7 @@ export function Pricing() {
                     ))}
                   </ul>
 
-                  <Button
-                    className={`w-full font-semibold ${
-                      plan.popular ? "bg-accent hover:bg-accent/90" : ""
-                    }`}
-                    variant={plan.popular ? "default" : "outline"}
-                    onClick={() => handlePlanSelect(plan.name)}
-                  >
-                    Choose {plan.name} Plan
-                  </Button>
+                  
                 </CardContent>
               </Card>
             ))}
@@ -205,11 +181,7 @@ export function Pricing() {
         </div>
       </section>
 
-      <AccountRegistrationModal
-        open={showRegistration}
-        onOpenChange={setShowRegistration}
-        selectedPlan={selectedPlan}
-      />
+      
     </>
   );
 }

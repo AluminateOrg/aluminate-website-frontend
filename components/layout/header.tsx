@@ -41,6 +41,7 @@ export function Header() {
       try {
         const res = await axiosAdmin.get('/info/getUser');
         if (res.status === 200 && res.data.success) {
+          
           dispatch(setUser({
             admin: res.data.data.admin,
             organization: res.data.data.organization,

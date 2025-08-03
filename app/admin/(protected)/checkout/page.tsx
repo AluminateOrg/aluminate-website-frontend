@@ -28,10 +28,14 @@ import {
   Calendar,
 } from "lucide-react";
 import { toast } from "sonner";
+import { useSelector } from "react-redux";
+import { useAuthChecking } from "@/context/AuthContext";
+import axiosAdmin from "@/components/axiosInstances/axiosAdmin";
 
 const plans = {
   Basic: {
-    price: 299,
+    id:1,
+    price: 18000,
     memberLimit: "500 Members",
     icon: Zap,
     features: [
@@ -46,7 +50,8 @@ const plans = {
     ],
   },
   Standard: {
-    price: 599,
+    id:2,
+    price: 30000,
     memberLimit: "2,000 Members",
     icon: Star,
     features: [
@@ -63,7 +68,8 @@ const plans = {
     ],
   },
   Premium: {
-    price: 999,
+    id:3,
+    price: 98000,
     memberLimit: "Unlimited Members",
     icon: Crown,
     features: [
@@ -91,27 +97,52 @@ interface AdminUser {
 export default function CheckoutPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const selectedPlan = searchParams.get("plan") || "Standard";
+  const searchSelectedPlan = searchParams.get("plan") || "Standard";
+  const [selectedPlan, setSelectedPlan] = useState<string>(searchSelectedPlan);
+
 
   const [user, setUser] = useState<AdminUser | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
-  
+
+
+  const userGlobal = useSelector((state: any) => state.user);
+  const userData = userGlobal?.admin;
+  const organizationData = userGlobal?.organization;
+
+  const { updateUser,apiUrl } = useAuthChecking(); 
+  const merchantId = process.env.NEXT_PUBLIC_PAYHERE_MERCHANT_ID ;
+
+
+
 
   useEffect(() => {
-    // Check if user is logged in
-    const authToken = localStorage.getItem("admin_token");
-    const userData = localStorage.getItem("admin_user");
+    const setLocalUser = () => {
+      if (userGlobal.isAuthenticated && !userData) {
+        router.push("/admin/login");
+        return;
+      }
+      if (userData && organizationData) {
+        setUser({
+          email: userData.email,
+          name: userData.name,
+          organization: organizationData.organizationName,
+          role: "Organization Admin",
+        });
+        if (organizationData.status === "ACTIVE") {
 
-    if (!authToken || !userData) {
-      router.push("/admin/login");
-      return;
+          updateUser();
+          router.replace("/admin/");
+          return;
+        }
+      } else {
+        setUser(null);
+      }
     }
+    setLocalUser();
 
+  }, [userGlobal])
 
-    setUser(JSON.parse(userData));
-  }, [router]);
-
-  const plan = plans[selectedPlan as keyof typeof plans];
+  const plan = plans[selectedPlan as keyof typeof plans];;
 
   if (!plan) {
     router.push("/");
@@ -125,81 +156,100 @@ export default function CheckoutPage() {
   setIsProcessing(true);
 
   try {
-    // 1. Call backend to get payment hash and transaction ID (order_id)
-    const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/payment/generate-hash`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        amount: plans[selectedPlan as keyof typeof plans].price,
-        currency: "LKR",
-        
-      }),
-    });
-
-    if (!response.ok) throw new Error("Failed to get payment hash");
-
-    const { hash, transaction_id } = await response.json();
-
-    console.log("Payment hash and transactionId received:", hash, transaction_id);
-
-    // 2. Prepare the PayHere payment object
-    const payment = {
-      sandbox: true, // set false in production
-      merchant_id: "YOUR_MERCHANT_ID", // Replace with your merchant ID or inject from env
-      return_url: `${window.location.origin}/payment-success`,
-      cancel_url: `${window.location.origin}/payment-cancel`,
-      notify_url: "https://yourdomain.com/api/v1/payment/notify", // your publicly accessible notify URL
-      order_id: transaction_id.toString(), // use transaction ID as order_id
-      items: `${selectedPlan} Plan Subscription`,
-      amount: plans[selectedPlan as keyof typeof plans].price.toFixed(2),
-      currency: "LKR",
-      hash: hash, // hash from backend
-      first_name: user.name.split(" ")[0] || user.name,
-      last_name: user.name.split(" ")[1] || "",
-      email: user.email,
-      phone: user.phone || "",
-      address: "",  // optional
-      city: "",     // optional
-      country: "Sri Lanka", // or dynamically from user profile
-      // add any other optional fields if needed
-    };
-
-    // 3. Load PayHere script and start payment
-    if (typeof window !== "undefined" && (window as any).payhere) {
-      (window as any).payhere.startPayment(payment);
-    } else {
-      // If payhere script not loaded yet, dynamically load it then start payment
-      const script = document.createElement("script");
-      script.src = "https://www.payhere.lk/lib/payhere.js";
-      script.onload = () => {
-        (window as any).payhere.startPayment(payment);
-      };
-      document.body.appendChild(script);
+    if (!merchantId) {
+      toast.error("Merchant ID is not configured. Please contact support.");
+      setIsProcessing(false);
+      return;
     }
 
-    // Set up event handlers (optional)
-    (window as any).payhere.onCompleted = function (orderId: string) {
-      console.log("Payment completed. Order ID:", orderId);
-      toast.success("Payment completed successfully!");
-      // Optionally redirect or refresh status
+    // 1. Get hash and transaction ID from backend
+    const amount = Number(plans[selectedPlan as keyof typeof plans].price);
+    const response = await axiosAdmin.post('/payment/generate-hash', {
+      amount,
+      currency: "LKR",
+    });
+
+    if (response.status !== 200 || !response.data.success) {
+      toast.error("Failed to initiate payment. Please try again.");
+      setIsProcessing(false);
+      return;
+    }
+
+    const { hash, transaction_id } = response.data.data || {};
+
+    if (!hash || !transaction_id) {
+      toast.error("Invalid payment response. Please try again.");
+      setIsProcessing(false);
+      return;
+    }
+
+    console.log("notify Url:", `${apiUrl}/public/payment/notify`);
+    // 2. Construct payment object
+    const payment = {
+      sandbox: true, // Use false in production
+      merchant_id: merchantId.toString(),
+      return_url: `${window.location.origin}/payment-success`,
+      cancel_url: `${window.location.origin}/payment-cancel`,
+      notify_url: `${apiUrl}/public/payment/notify`, // publicly accessible server endpoint
+      order_id: transaction_id.toString(),
+      items: `${selectedPlan} Plan Subscription`,
+      amount: amount.toFixed(2).toString(),
+      currency: "LKR",
+      hash: hash.toString(),
+      first_name: userData.name?.split(" ")[0] || userData.name || "User",
+      last_name: userData.name?.split(" ")[1] || "",
+      email: userData.email || "email@domain.com",
+      phone: "",       // optional
+      address: "",     // optional
+      city: "",        // optional
+      country: "Sri Lanka",
+      custom_1: plan.id,  //add the plan id here
+      custom_2: userData.email
     };
 
-    (window as any).payhere.onDismissed = function () {
+    // 3. Attach event listeners before calling `startPayment`
+    const payhere = (window as any).payhere || {};
+
+    // Avoid duplicated event listeners
+    payhere.onCompleted = function (orderId: string) {
+      console.log("Payment completed. Order ID:", orderId);
+      toast.success("Payment completed successfully!");
+      // Redirect or refresh status
+    };
+
+    payhere.onDismissed = function () {
       console.log("Payment dismissed");
       toast.error("Payment was cancelled.");
     };
 
-    (window as any).payhere.onError = function (error: any) {
+    payhere.onError = function (error: any) {
       console.error("PayHere Error:", error);
       toast.error("Payment error occurred. Please try again.");
     };
+
+    // 4. Start PayHere Payment
+    const isLoaded = (window as any).payhereScriptLoaded;
+
+    if (!isLoaded) {
+      const script = document.createElement("script");
+      script.src = "https://www.payhere.lk/lib/payhere.js";
+      script.onload = () => {
+        (window as any).payhereScriptLoaded = true;
+        (window as any).payhere.startPayment(payment);
+      };
+      document.body.appendChild(script);
+    } else {
+      payhere.startPayment(payment);
+    }
+
   } catch (error) {
     console.error("Payment error:", error);
-    toast.error("Failed to initiate payment");
+    toast.error("Failed to initiate payment. Please try again.");
   } finally {
     setIsProcessing(false);
   }
 };
+
 
 
   const handleBackToPricing = () => {
@@ -238,7 +288,55 @@ export default function CheckoutPage() {
           </p>
         </div>
 
-        <div className="grid lg:grid-cols-2 gap-8">
+        
+          {/* Show packages */}
+          <div className="space-y-6 mb-12">
+            <h2 className="text-xl font-semibold">Choose Your Plan</h2>
+            <div className="grid md:grid-cols-3 gap-6">
+              {Object.entries(plans).map(([planKey, planDetails]) => {
+                const Icon = planDetails.icon;
+                const isSelected = selectedPlan === planKey;
+
+                return (
+                  <Card
+                    key={planKey}
+                    onClick={() => setSelectedPlan(planKey)}
+                    className={`cursor-pointer transition-all ${isSelected
+                      ? "ring-2 ring-accent shadow-lg scale-[1.02]"
+                      : "hover:scale-[1.01]"
+                      }`}
+                  >
+                    <CardHeader className="text-center space-y-2">
+                      <div className="flex justify-center">
+                        <div className="w-12 h-12 rounded-full flex items-center justify-center bg-accent/10 text-accent">
+                          <Icon className="w-6 h-6" />
+                        </div>
+                      </div>
+                      <CardTitle>{planKey} Plan</CardTitle>
+                      <CardDescription>{planDetails.memberLimit}</CardDescription>
+                    </CardHeader>
+                    <CardContent className="text-center">
+                      <div className="text-xl font-bold text-foreground mb-2">
+                        LKR {planDetails.price.toLocaleString("en-LK")}/month
+                      </div>
+                      <ul className="text-sm text-muted-foreground space-y-1">
+                        {planDetails.features.slice(0, 3).map((feature, index) => (
+                          <li key={index} className="flex items-center justify-center space-x-2">
+                            <Check className="w-3 h-3 text-accent" />
+                            <span>{feature}</span>
+                          </li>
+                        ))}
+                        {planDetails.features.length > 3 && (
+                          <li>+{planDetails.features.length - 3} more</li>
+                        )}
+                      </ul>
+                    </CardContent>
+                  </Card>
+                );
+              })}
+            </div>
+          </div>
+          
           {/* Order Summary */}
           <div className="space-y-6">
             <Card>
@@ -254,7 +352,7 @@ export default function CheckoutPage() {
               <CardContent className="space-y-4">
                 <div className="flex items-center justify-between">
                   <span className="text-2xl font-bold text-foreground">
-                    LKR {plan.price}/month
+                    LKR {plan.price.toLocaleString("en-LK")} / month
                   </span>
                   <Badge variant="secondary">{plan.memberLimit}</Badge>
                 </div>
@@ -288,7 +386,7 @@ export default function CheckoutPage() {
                 <div className="space-y-2">
                   <div className="flex justify-between text-sm">
                     <span>Subtotal</span>
-                    <span>LKR {plan.price}</span>
+                    <span>LKR {plan.price.toLocaleString("en-LK")}</span>
                   </div>
                   <div className="flex justify-between text-sm">
                     <span>Setup Fee</span>
@@ -296,7 +394,7 @@ export default function CheckoutPage() {
                   </div>
                   <div className="flex justify-between font-semibold">
                     <span>Total (Monthly)</span>
-                    <span>LKR {plan.price}</span>
+                    <span>LKR {plan.price.toLocaleString("en-LK")}</span>
                   </div>
                 </div>
               </CardContent>
@@ -352,7 +450,7 @@ export default function CheckoutPage() {
                     ) : (
                       <>
                         <Lock className="w-4 h-4 mr-2" />
-                        Pay by Payhere - LKR {plan.price}/month
+                        Pay by Payhere - LKR {plan.price.toLocaleString("en-LK")}
                       </>
                     )}
                   </Button>
@@ -373,7 +471,7 @@ export default function CheckoutPage() {
               </CardContent>
             </Card>
           </div>
-        </div>
+        
       </div>
     </div>
   );

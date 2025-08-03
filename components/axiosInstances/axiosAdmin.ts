@@ -21,7 +21,7 @@ axiosAdmin.interceptors.request.use(config => {
 
   // Attach CSRF token and sessionId to headers if they exist
   if (csrfToken && config.headers) {
-    config.headers["X-CSRF-TOKEN"] = csrfToken;
+    config.headers["X-Csrf-Token"] = csrfToken;
   }
 
   if (sessionId && config.headers) {
