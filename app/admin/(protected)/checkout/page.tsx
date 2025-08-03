@@ -34,6 +34,7 @@ import axiosAdmin from "@/components/axiosInstances/axiosAdmin";
 
 const plans = {
   Basic: {
+    id:1,
     price: 18000,
     memberLimit: "500 Members",
     icon: Zap,
@@ -49,6 +50,7 @@ const plans = {
     ],
   },
   Standard: {
+    id:2,
     price: 30000,
     memberLimit: "2,000 Members",
     icon: Star,
@@ -66,6 +68,7 @@ const plans = {
     ],
   },
   Premium: {
+    id:3,
     price: 98000,
     memberLimit: "Unlimited Members",
     icon: Crown,
@@ -180,6 +183,7 @@ export default function CheckoutPage() {
       return;
     }
 
+    console.log("notify Url:", `${apiUrl}/public/payment/notify`);
     // 2. Construct payment object
     const payment = {
       sandbox: true, // Use false in production
@@ -195,10 +199,12 @@ export default function CheckoutPage() {
       first_name: userData.name?.split(" ")[0] || userData.name || "User",
       last_name: userData.name?.split(" ")[1] || "",
       email: userData.email || "email@domain.com",
-      phone: "07718844428",       // optional
+      phone: "",       // optional
       address: "",     // optional
       city: "",        // optional
       country: "Sri Lanka",
+      custom_1: plan.id,  //add the plan id here
+      custom_2: userData.email
     };
 
     // 3. Attach event listeners before calling `startPayment`
@@ -346,7 +352,7 @@ export default function CheckoutPage() {
               <CardContent className="space-y-4">
                 <div className="flex items-center justify-between">
                   <span className="text-2xl font-bold text-foreground">
-                    LKR {plan.price}/month
+                    LKR {plan.price.toLocaleString("en-LK")} / month
                   </span>
                   <Badge variant="secondary">{plan.memberLimit}</Badge>
                 </div>
