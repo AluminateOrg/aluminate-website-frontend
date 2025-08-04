@@ -54,6 +54,7 @@ export function AdminHeader() {
       const res = await axiosGlobal.post('/auth/logout');
       if (res.status === 200) {
         setUser(null);
+        dispatch(logoutUser());
         toast.success('Logged out successfully');
         router.push('/admin/login');
       }else{
