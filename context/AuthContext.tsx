@@ -1,4 +1,4 @@
-'use client';
+"use client";
 import axiosAdmin from '@/components/axiosInstances/axiosAdmin';
 import axiosGlobal from '@/components/axiosInstances/axiosGlobal';
 import { logoutUser, setUser } from '@/redux/userSlice';
