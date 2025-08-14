@@ -1,7 +1,7 @@
-'use client';
+"use client";
 import axiosAdmin from '@/components/axiosInstances/axiosAdmin';
 import axiosGlobal from '@/components/axiosInstances/axiosGlobal';
-import { setUser } from '@/redux/userSlice';
+import { logoutUser, setUser } from '@/redux/userSlice';
 import { useRouter } from 'next/navigation';
 import React, { createContext, useContext, useState } from 'react';
 import { useSelector } from 'react-redux';
@@ -42,7 +42,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
             const res = await axiosGlobal.post('/auth/logout');
             if (res.status === 200) {
-
+                dispatch(logoutUser());
                 router.push('/admin/login');
             }
 

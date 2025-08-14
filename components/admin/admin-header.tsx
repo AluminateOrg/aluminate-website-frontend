@@ -17,8 +17,9 @@ import { NotificationsPanel } from '@/components/admin/notifications-panel';
 import { Users, Bell, Settings, LogOut, User, HelpCircle, Home } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import axiosGlobal from '../axiosInstances/axiosGlobal';
+import { logoutUser } from '@/redux/userSlice';
 
 interface AdminUser {
   email: string;
@@ -33,6 +34,7 @@ export function AdminHeader() {
   const userGlobal = useSelector((state: any) => state.user);
   const organizationData = userGlobal?.organization;
   const userData = userGlobal?.admin;
+  const dispatch = useDispatch();
 
  useEffect(() => {
   if (userData && organizationData) {
@@ -51,8 +53,12 @@ export function AdminHeader() {
       
       const res = await axiosGlobal.post('/auth/logout');
       if (res.status === 200) {
+        setUser(null);
+        dispatch(logoutUser());
         toast.success('Logged out successfully');
         router.push('/admin/login');
+      }else{
+        toast.error('Failed to log out. Please try again.');
       }
 
     } catch (error) {
