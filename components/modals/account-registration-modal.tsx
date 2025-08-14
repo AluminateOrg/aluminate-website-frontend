@@ -27,6 +27,7 @@ import { Loader2, Building, User, Mail, Phone, CreditCard, Shield } from 'lucide
 import { toast } from 'sonner';
 import axiosGlobal from '../axiosInstances/axiosGlobal';
 import { useRouter } from 'next/navigation';
+import { encryptObject, importPublicKey } from '@/util/rsa';
 
 // Form validation schema
 const registrationSchema = z.object({
@@ -80,14 +81,22 @@ export function AccountRegistrationModal({
     setIsSubmitting(true);
 
     try {
-      const response = await axiosGlobal.post('/auth/register', {
+      //encrypt
+      const pem = process.env.NEXT_PUBLIC_GLOBAL_PUBLIC_KEY!;
+      const publicKey = await importPublicKey(pem);
+      const obj = {
         organizationName: data.organizationName,
         adminFullName: data.adminFullName,
         email: data.email,
         phoneNumber: data.phoneNumber,
         nationalId: data.nationalId,
         password: data.password,
+      }
+      const payload = await encryptObject(obj, publicKey);
 
+
+      const response = await axiosGlobal.post('/auth/register', {
+        payload
       });
 
       const responseData = response.data;
@@ -101,7 +110,7 @@ export function AccountRegistrationModal({
         console.error('Registration error:', responseData);
       }
     } catch (error: any) {
-        toast.error(error.response.data.message); // Shows specific message
+      toast.error(error.response.data.message); // Shows specific message
 
     } finally {
       setIsSubmitting(false);

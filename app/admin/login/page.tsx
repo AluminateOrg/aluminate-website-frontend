@@ -12,6 +12,7 @@ import { toast } from 'sonner';
 import axios from 'axios';
 
 import axiosGlobal from '@/components/axiosInstances/axiosGlobal';
+import { encryptObject, importPublicKey } from '@/util/rsa';
 
 export default function AdminLogin() {
   const [email, setEmail] = useState('');
@@ -28,9 +29,13 @@ export default function AdminLogin() {
     setIsLoading(true);
 
     try {
+      //encrypt
+      const pem = process.env.NEXT_PUBLIC_GLOBAL_PUBLIC_KEY!;
+      const publicKey = await importPublicKey(pem);
+      const payload = await encryptObject({ email, password }, publicKey);
+      
       const res = await axiosGlobal.post('/auth/login', {
-        email,
-        password,
+        payload
       });
 
       if (res.status !== 200) {
