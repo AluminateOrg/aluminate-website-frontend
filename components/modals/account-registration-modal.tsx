@@ -83,7 +83,7 @@ export function AccountRegistrationModal({
     try {
       //encrypt
       const pem = process.env.NEXT_PUBLIC_GLOBAL_PUBLIC_KEY!;
-      const publicKey = await importPublicKey(pem);
+      const publicKey = importPublicKey(pem);
       const obj = {
         organizationName: data.organizationName,
         adminFullName: data.adminFullName,
