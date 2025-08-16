@@ -84,19 +84,22 @@ export function AccountRegistrationModal({
       //encrypt
       const pem = process.env.NEXT_PUBLIC_GLOBAL_PUBLIC_KEY!;
       const publicKey = importPublicKey(pem);
+      const encryptObj = {
+        email: data.email,
+        password: data.password,
+      }
       const obj = {
         organizationName: data.organizationName,
         adminFullName: data.adminFullName,
-        email: data.email,
         phoneNumber: data.phoneNumber,
         nationalId: data.nationalId,
-        password: data.password,
+
       }
-      const payload = await encryptObject(obj, publicKey);
+      const payload = await encryptObject(encryptObj, publicKey);
 
 
       const response = await axiosGlobal.post('/auth/register', {
-        payload
+        payload,obj
       });
 
       const responseData = response.data;
