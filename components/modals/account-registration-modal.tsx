@@ -58,6 +58,11 @@ export function AccountRegistrationModal({
 }: AccountRegistrationModalProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [step, setStep] = useState(1);
+  const [otpSent, setOtpSent] = useState(false);
+  const [isSendingOtp, setIsSendingOtp] = useState(false);
+  const [isVerifyingOtp, setIsVerifyingOtp] = useState(false);
+  const [otpInputValue, setOtpInputValue] = useState('');
+  const [emailVerified, setEmailVerified] = useState(false);
 
   const router = useRouter();
 
@@ -74,8 +79,58 @@ export function AccountRegistrationModal({
     },
   });
 
+  const sendOtp = async () => {
+    const email = form.getValues('email');
+    if (!email) {
+      toast.error('Please enter an email first');
+      return;
+    }
 
+    setIsSendingOtp(true);
+    try {
+      const res = await axiosGlobal.get('/auth/send-otp', { params: { email } });
+      if (res.status === 200 && res.data?.success) {
+        setOtpSent(true);
+        toast.success('OTP sent to ' + email);
+      } else {
+        toast.error(res.data?.message || 'Failed to send OTP');
+      }
+    } catch (err: any) {
+      toast.error(err?.response?.data?.message || 'Error sending OTP');
+    } finally {
+      setIsSendingOtp(false);
+    }
+  };
 
+  const verifyOtp = async () => {
+    const email = form.getValues('email');
+    if (!email) {
+      toast.error('Email missing');
+      return;
+    }
+    if (!otpInputValue) {
+      toast.error('Please enter the OTP');
+      return;
+    }
+
+    setIsVerifyingOtp(true);
+    try {
+      const res = await axiosGlobal.post('/auth/verify-otp', {
+        email: email,
+        otp: otpInputValue,
+      });
+      if (res.status === 200 && res.data?.success) {
+        setEmailVerified(true);
+        toast.success('Email verified');
+      } else {
+        toast.error(res.data?.message || 'OTP verification failed');
+      }
+    } catch (err: any) {
+      toast.error(err?.response?.data?.message || 'Error verifying OTP');
+    } finally {
+      setIsVerifyingOtp(false);
+    }
+  };
 
   const onSubmit = async (data: RegistrationFormData) => {
     setIsSubmitting(true);
@@ -95,6 +150,9 @@ export function AccountRegistrationModal({
         nationalId: data.nationalId,
 
       }
+
+      console.log("obj", obj);
+
       const payload = await encryptObject(encryptObj, publicKey);
 
 
@@ -204,15 +262,48 @@ export function AccountRegistrationModal({
                   <FormItem>
                     <FormLabel>Email Address *</FormLabel>
                     <FormControl>
-                      <Input
-                        type="email"
-                        placeholder="admin@organization.edu"
-                        {...field}
-                      />
+                      <div className="flex space-x-2">
+                        <Input
+                          type="email"
+                          placeholder="admin@organization.edu"
+                          {...field}
+                          disabled={emailVerified}
+                        />
+                        {!emailVerified && (
+                          <Button
+                            type="button"
+                            onClick={sendOtp}
+                            disabled={isSendingOtp || !field.value}
+                            variant="outline"
+                          >
+                            {isSendingOtp ? 'Sending...' : 'Send OTP'}
+                          </Button>
+                        )}
+                        {emailVerified && (
+                          <Badge className="flex items-center">Verified</Badge>
+                        )}
+                      </div>
                     </FormControl>
                     <FormDescription>
                       This email will be used for login and system notifications
                     </FormDescription>
+                    {otpSent && !emailVerified && (
+                      <div className="mt-2 flex items-center space-x-2">
+                        <Input
+                          placeholder="Enter OTP"
+                          value={otpInputValue}
+                          onChange={(e) => setOtpInputValue(e.target.value)}
+                          className="w-32"
+                        />
+                        <Button
+                          type="button"
+                          onClick={verifyOtp}
+                          disabled={isVerifyingOtp}
+                        >
+                          {isVerifyingOtp ? 'Verifying...' : 'Verify'}
+                        </Button>
+                      </div>
+                    )}
                     <FormMessage />
                   </FormItem>
                 )}
