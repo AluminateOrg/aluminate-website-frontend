@@ -20,7 +20,6 @@ RUN npm install
 # 5. Copy the rest of the application source code
 COPY . .
 
-
 # 6. Initialize and update submodules if they are present within the context
 
 #RUN git submodule update --init --recursive
