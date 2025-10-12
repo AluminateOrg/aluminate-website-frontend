@@ -28,7 +28,9 @@ export default function CountUp({
   onStart,
   onEnd,
 }: CountUpProps) {
-  const ref = useRef<HTMLSpanElement>(null);
+  // Fix: use a more generic ref type for useInView
+  const ref = useRef<HTMLSpanElement | null>(null);
+  
   const motionValue = useMotionValue(direction === "down" ? to : from);
 
   const damping = 20 + 40 * (1 / duration);
@@ -36,6 +38,7 @@ export default function CountUp({
 
   const springValue = useSpring(motionValue, { damping, stiffness });
 
+  // Fix: Cast the ref to satisfy the useInView type
   const isInView = useInView(ref as React.RefObject<Element>, { once: true, margin: "0px" });
 
   useEffect(() => {
