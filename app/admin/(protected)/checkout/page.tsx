@@ -263,14 +263,11 @@ export default function CheckoutPage() {
         return;
       }
 
-      console.log("Initiating payment for plan:", plan);
-      console.log("selectedPlan:", selectedPlan);
-      console.log("plan price", plan.price);
+
 
       // 1. Get hash and transaction ID from backend
       // const amount = Number(plan[selectedPlan as keyof typeof plans].price);
       const amount = Number(plan.price);
-      console.log("Amount:", amount);
       const response = await axiosAdmin.post('/payment/generate-hash', {
         amount,
         currency: "LKR",
@@ -318,10 +315,16 @@ export default function CheckoutPage() {
       const payhere = (window as any).payhere || {};
 
       // Avoid duplicated event listeners
-      payhere.onCompleted = function (orderId: string) {
+      payhere.onCompleted = async function (orderId: string) {
         console.log("Payment completed. Order ID:", orderId);
         toast.success("Payment completed successfully!");
-        // Redirect or refresh status
+        const {data} = await axiosGlobal.get(`/public/payment/verify/${orderId}`)
+        if (data) {
+          console.log("Verification data:", data);
+          toast.success("Status changed to ACTIVE. Redirecting...");
+        } else {
+          toast.error("Failed to verify payment status. Please contact support.");
+        }
       };
 
       payhere.onDismissed = function () {
