@@ -16,7 +16,7 @@ export const metadata: Metadata = {
   keywords:
     'alumni portal, alumni management, university alumni, alumni engagement, alumni software, alumni platform',
   authors: [{ name: 'Alumni Portal System' }],
-  viewport: 'width=device-width, initial-scale=1',
+  
   robots: 'index, follow',
   openGraph: {
     title: 'Alumni Portal System - Reimagine Alumni Engagement',
@@ -25,6 +25,10 @@ export const metadata: Metadata = {
     type: 'website',
     locale: 'en_US',
   },
+};
+export const viewport = {
+  width: 'device-width',
+  initialScale: 1,
 };
 
 export default function RootLayout({
