@@ -133,6 +133,11 @@ export function AccountRegistrationModal({
   };
 
   const onSubmit = async (data: RegistrationFormData) => {
+    if (!emailVerified) {
+      toast.error('Please verify your email before creating account');
+      return;
+    }
+
     setIsSubmitting(true);
 
     try {
@@ -409,7 +414,7 @@ export function AccountRegistrationModal({
               </Button>
               <Button
                 type="submit"
-                disabled={isSubmitting}
+                disabled={!emailVerified || isSubmitting}
                 className="flex-1"
               >
                 {isSubmitting ? (
