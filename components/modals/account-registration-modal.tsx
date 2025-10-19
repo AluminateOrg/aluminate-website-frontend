@@ -155,6 +155,8 @@ export function AccountRegistrationModal({
 
       const payload = await encryptObject(encryptObj, publicKey);
 
+      console.log("successfully encrypted", payload);
+
 
       const response = await axiosGlobal.post('/auth/register', {
         payload,obj
