@@ -19,12 +19,15 @@ export function PortalAccess() {
   const [portalData, setPortalData] = useState<PortalData | null>(null);
   const user = useSelector((state: any) => state.user);
 
+  useEffect(() => {
+    if (user?.organization) {
+      setPortalData({
+        url: user.organization.portalUrl,
+        status: user.organization.status,
+      });
+    }
+  }, [user]);
 
-  //set portal data
-  setPortalData({
-    url: user.organization?.portalUrl,
-    status: user.organization?.status,
-  })
 
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
