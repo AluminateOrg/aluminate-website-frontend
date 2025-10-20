@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
-import { ExternalLink, Copy, Globe, Lock } from 'lucide-react';
+import { ExternalLink, Copy, Globe, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import axiosAdmin from '../axiosInstances/axiosAdmin';
 import { useState, useEffect } from 'react';
@@ -28,18 +28,25 @@ export function PortalAccess() {
     }
   }, [user]);
 
-
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
     toast.success('URL copied to clipboard!');
   };
 
   const openPortal = () => {
-    if (portalData?.url) window.open(portalData.url, '_blank');
+    if (portalData?.url && portalData?.status === 'ACTIVE') {
+      window.open(portalData.url, '_blank');
+    }
   };
 
+  const isBuilding = portalData?.status === 'BUILDING';
+  const isActive = portalData?.status === 'ACTIVE';
+  const isFailed = portalData?.status === 'BUILD_FAILED';
+
   return (
-    <Card>
+    <Card
+      className={`${isBuilding ? 'opacity-60 blur-[1px] pointer-events-none select-none transition-all duration-300' : 'transition-all duration-300'}`}
+    >
       <CardHeader>
         <CardTitle className="flex items-center space-x-2">
           <Globe className="w-5 h-5 text-accent" />
@@ -47,6 +54,7 @@ export function PortalAccess() {
         </CardTitle>
         <CardDescription>Access your organization portal</CardDescription>
       </CardHeader>
+
       <CardContent className="space-y-6">
         {/* Portal URL */}
         <div className="space-y-2">
@@ -61,10 +69,16 @@ export function PortalAccess() {
               variant="outline"
               size="sm"
               onClick={() => portalData?.url && copyToClipboard(portalData.url)}
+              disabled={!isActive}
             >
               <Copy className="w-4 h-4" />
             </Button>
-            <Button onClick={openPortal} variant="outline" size="sm">
+            <Button
+              onClick={openPortal}
+              variant="outline"
+              size="sm"
+              disabled={!isActive}
+            >
               <ExternalLink className="w-4 h-4" />
             </Button>
           </div>
@@ -76,14 +90,28 @@ export function PortalAccess() {
             <div className="text-sm font-medium text-muted-foreground">Status</div>
             <Badge
               className={
-                portalData?.status === 'Active'
+                isActive
                   ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
-                  : "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200"
+                  : isBuilding
+                  ? "bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200"
+                  : isFailed
+                  ? "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200"
+                  : "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200"
               }
             >
-              {portalData?.status ?? 'Loading...'}
+              <div className="flex items-center space-x-1">
+                {isBuilding && <Loader2 className="w-3 h-3 animate-spin" />}
+                <span>{portalData?.status ?? 'Loading...'}</span>
+              </div>
             </Badge>
           </div>
+
+          {/* Error Message */}
+          {isFailed && (
+            <div className="text-sm text-red-600 dark:text-red-400 mt-2">
+              ⚠️ Your organization portal couldn’t start properly. Please contact customer care for assistance.
+            </div>
+          )}
         </div>
       </CardContent>
     </Card>
