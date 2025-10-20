@@ -1,16 +1,16 @@
 "use client";
 
-import { useState } from 'react';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import * as z from 'zod';
+import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
 import {
   Dialog,
   DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
-} from '@/components/ui/dialog';
+} from "@/components/ui/dialog";
 import {
   Form,
   FormControl,
@@ -19,29 +19,43 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Loader2, Building, User, Mail, Phone, CreditCard, Shield } from 'lucide-react';
-import { toast } from 'sonner';
-import axiosGlobal from '../axiosInstances/axiosGlobal';
-import { useRouter } from 'next/navigation';
-import { encryptObject, importPublicKey } from '@/util/rsa';
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import {
+  Loader2,
+  Building,
+  User,
+  Mail,
+  Phone,
+  CreditCard,
+  Shield,
+} from "lucide-react";
+import { toast } from "sonner";
+import axiosGlobal from "../axiosInstances/axiosGlobal";
+import { useRouter } from "next/navigation";
+import { encryptObject, importPublicKey } from "@/util/rsa";
 
 // Form validation schema
-const registrationSchema = z.object({
-  organizationName: z.string().min(2, 'Organization name must be at least 2 characters'),
-  adminFullName: z.string().min(2, 'Admin name must be at least 2 characters'),
-  email: z.string().email('Please enter a valid email address'),
-  phoneNumber: z.string().optional(),
-  nationalId: z.string().min(5, 'National ID must be at least 5 characters'),
-  password: z.string().min(8, 'Password must be at least 8 characters'),
-  confirmPassword: z.string(),
-}).refine((data) => data.password === data.confirmPassword, {
-  message: "Passwords don't match",
-  path: ["confirmPassword"],
-});
+const registrationSchema = z
+  .object({
+    organizationName: z
+      .string()
+      .min(2, "Organization name must be at least 2 characters"),
+    adminFullName: z
+      .string()
+      .min(2, "Admin name must be at least 2 characters"),
+    email: z.string().email("Please enter a valid email address"),
+    phoneNumber: z.string().optional(),
+    nationalId: z.string().min(5, "National ID must be at least 5 characters"),
+    password: z.string().min(8, "Password must be at least 8 characters"),
+    confirmPassword: z.string(),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: "Passwords don't match",
+    path: ["confirmPassword"],
+  });
 
 type RegistrationFormData = z.infer<typeof registrationSchema>;
 
@@ -54,7 +68,7 @@ interface AccountRegistrationModalProps {
 export function AccountRegistrationModal({
   open,
   onOpenChange,
-  selectedPlan
+  selectedPlan,
 }: AccountRegistrationModalProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [step, setStep] = useState(1);
@@ -69,16 +83,18 @@ export function AccountRegistrationModal({
   const form = useForm<RegistrationFormData>({
     resolver: zodResolver(registrationSchema),
     defaultValues: {
-      organizationName: '',
-      adminFullName: '',
-      email: '',
-      phoneNumber: '',
-      nationalId: '',
-      password: '',
-      confirmPassword: '',
+      organizationName: "",
+      adminFullName: "",
+      email: "",
+      phoneNumber: "",
+      nationalId: "",
+      password: "",
+      confirmPassword: "",
     },
   });
 
+<<<<<<< HEAD
+=======
   const sendOtp = async () => {
     const email = form.getValues('email');
     if (!email) {
@@ -132,6 +148,7 @@ export function AccountRegistrationModal({
     }
   };
 
+>>>>>>> 929c393df258083d564fd7de1893669aa856a5d7
   const onSubmit = async (data: RegistrationFormData) => {
     setIsSubmitting(true);
 
@@ -142,12 +159,20 @@ export function AccountRegistrationModal({
       const encryptObj = {
         email: data.email,
         password: data.password,
-      }
+      };
       const obj = {
         organizationName: data.organizationName,
         adminFullName: data.adminFullName,
         phoneNumber: data.phoneNumber,
         nationalId: data.nationalId,
+<<<<<<< HEAD
+      };
+      const payload = await encryptObject(encryptObj, publicKey);
+
+      const response = await axiosGlobal.post("/auth/register", {
+        payload,
+        obj,
+=======
 
       }
 
@@ -160,26 +185,29 @@ export function AccountRegistrationModal({
 
       const response = await axiosGlobal.post('/auth/register', {
         payload,obj
+>>>>>>> 929c393df258083d564fd7de1893669aa856a5d7
       });
 
       const responseData = response.data;
 
       if (response.status === 200 && responseData.success) {
-        toast.success('Account created successfully!');
-        router.push('/admin/');
-
+        toast.success("Account created successfully!");
+        router.push("/admin/");
       } else {
-        toast.error(responseData.message || 'Registration failed. Please try again.');
-        console.error('Registration error:', responseData);
+        toast.error(
+          responseData.message || "Registration failed. Please try again."
+        );
+        console.error("Registration error:", responseData);
       }
     } catch (error: any) {
-      toast.error(error.response.data.message); // Shows specific message
-
+      //toast.error(error.response.data.message); // Shows specific message
+      toast.error(
+        "Registration failed. Please check your input and try again."
+      );
     } finally {
       setIsSubmitting(false);
     }
   };
-
 
   const handleClose = () => {
     if (!isSubmitting) {
@@ -198,14 +226,12 @@ export function AccountRegistrationModal({
             <span>Create Organization Account</span>
           </DialogTitle>
           <DialogDescription>
-            Register your organization to get started with the Alumni Portal System.
-            This account will serve as your Organization Admin identity.
+            Register your organization to get started with the Alumni Portal
+            System. This account will serve as your Organization Admin identity.
           </DialogDescription>
 
           {selectedPlan && (
-            <Badge className="w-fit">
-              Selected Plan: {selectedPlan}
-            </Badge>
+            <Badge className="w-fit">Selected Plan: {selectedPlan}</Badge>
           )}
         </DialogHeader>
 
@@ -339,7 +365,10 @@ export function AccountRegistrationModal({
                   <FormItem>
                     <FormLabel>National ID / NIC *</FormLabel>
                     <FormControl>
-                      <Input placeholder="Enter your national identification number" {...field} />
+                      <Input
+                        placeholder="Enter your national identification number"
+                        {...field}
+                      />
                     </FormControl>
                     <FormDescription>
                       For identity verification and security purposes
@@ -364,7 +393,11 @@ export function AccountRegistrationModal({
                   <FormItem>
                     <FormLabel>Password *</FormLabel>
                     <FormControl>
-                      <Input type="password" placeholder="Create a strong password" {...field} />
+                      <Input
+                        type="password"
+                        placeholder="Create a strong password"
+                        {...field}
+                      />
                     </FormControl>
                     <FormDescription>
                       Minimum 8 characters with letters, numbers, and symbols
@@ -381,7 +414,11 @@ export function AccountRegistrationModal({
                   <FormItem>
                     <FormLabel>Confirm Password *</FormLabel>
                     <FormControl>
-                      <Input type="password" placeholder="Confirm your password" {...field} />
+                      <Input
+                        type="password"
+                        placeholder="Confirm your password"
+                        {...field}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -391,11 +428,16 @@ export function AccountRegistrationModal({
 
             {/* Terms */}
             <div className="text-xs text-muted-foreground p-3 bg-muted/50 rounded-lg">
-              By creating an account, you agree to our{' '}
-              <a href="#" className="text-accent hover:underline">Terms of Service</a>{' '}
-              and{' '}
-              <a href="#" className="text-accent hover:underline">Privacy Policy</a>.
-              Your data will be processed securely and used only for account management and service delivery.
+              By creating an account, you agree to our{" "}
+              <a href="#" className="text-accent hover:underline">
+                Terms of Service
+              </a>{" "}
+              and{" "}
+              <a href="#" className="text-accent hover:underline">
+                Privacy Policy
+              </a>
+              . Your data will be processed securely and used only for account
+              management and service delivery.
             </div>
 
             {/* Actions */}
@@ -409,11 +451,7 @@ export function AccountRegistrationModal({
               >
                 Cancel
               </Button>
-              <Button
-                type="submit"
-                disabled={isSubmitting}
-                className="flex-1"
-              >
+              <Button type="submit" disabled={isSubmitting} className="flex-1">
                 {isSubmitting ? (
                   <>
                     <Loader2 className="w-4 h-4 mr-2 animate-spin" />
@@ -432,10 +470,17 @@ export function AccountRegistrationModal({
 
         {/* Next steps preview */}
         <div className="mt-6 p-3 bg-accent/5 rounded-lg border border-accent/10">
-          <p className="text-sm font-medium text-foreground mb-2">Next Steps:</p>
+          <p className="text-sm font-medium text-foreground mb-2">
+            Next Steps:
+          </p>
           <ol className="text-xs text-muted-foreground space-y-1">
             <li>1. Account verification via email</li>
-            <li>2. {selectedPlan ? `Complete ${selectedPlan} plan payment` : 'Choose subscription tier'}</li>
+            <li>
+              2.{" "}
+              {selectedPlan
+                ? `Complete ${selectedPlan} plan payment`
+                : "Choose subscription tier"}
+            </li>
             <li>3. Automated portal provisioning</li>
             <li>4. Access your admin dashboard</li>
           </ol>
