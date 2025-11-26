@@ -27,6 +27,7 @@ import { Loader2, Building, User, Mail, Phone, CreditCard, Shield } from 'lucide
 import { toast } from 'sonner';
 import axiosGlobal from '../axiosInstances/axiosGlobal';
 import { useRouter } from 'next/navigation';
+import { encryptObject, importPublicKey } from '@/util/rsa';
 
 // Form validation schema
 const registrationSchema = z.object({
@@ -57,6 +58,11 @@ export function AccountRegistrationModal({
 }: AccountRegistrationModalProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [step, setStep] = useState(1);
+  const [otpSent, setOtpSent] = useState(false);
+  const [isSendingOtp, setIsSendingOtp] = useState(false);
+  const [isVerifyingOtp, setIsVerifyingOtp] = useState(false);
+  const [otpInputValue, setOtpInputValue] = useState('');
+  const [emailVerified, setEmailVerified] = useState(false);
 
   const router = useRouter();
 
@@ -73,21 +79,90 @@ export function AccountRegistrationModal({
     },
   });
 
+  const sendOtp = async () => {
+    const email = form.getValues('email');
+    if (!email) {
+      toast.error('Please enter an email first');
+      return;
+    }
 
+    setIsSendingOtp(true);
+    try {
+      const res = await axiosGlobal.get('/auth/send-otp', { params: { email } });
+      if (res.status === 200 && res.data?.success) {
+        setOtpSent(true);
+        toast.success('OTP sent to ' + email);
+      } else {
+        toast.error(res.data?.message || 'Failed to send OTP');
+      }
+    } catch (err: any) {
+      toast.error(err?.response?.data?.message || 'Error sending OTP');
+    } finally {
+      setIsSendingOtp(false);
+    }
+  };
 
+  const verifyOtp = async () => {
+    const email = form.getValues('email');
+    if (!email) {
+      toast.error('Email missing');
+      return;
+    }
+    if (!otpInputValue) {
+      toast.error('Please enter the OTP');
+      return;
+    }
+
+    setIsVerifyingOtp(true);
+    try {
+      const res = await axiosGlobal.post('/auth/verify-otp', {
+        email: email,
+        otp: otpInputValue,
+      });
+      if (res.status === 200 && res.data?.success) {
+        setEmailVerified(true);
+        toast.success('Email verified');
+      } else {
+        toast.error(res.data?.message || 'OTP verification failed');
+      }
+    } catch (err: any) {
+      toast.error(err?.response?.data?.message || 'Error verifying OTP');
+    } finally {
+      setIsVerifyingOtp(false);
+    }
+  };
 
   const onSubmit = async (data: RegistrationFormData) => {
+    if (!emailVerified) {
+      toast.error('Please verify your email before creating account');
+      return;
+    }
+
     setIsSubmitting(true);
 
     try {
-      const response = await axiosGlobal.post('/auth/register', {
+      //encrypt
+      const pem = process.env.NEXT_PUBLIC_GLOBAL_PUBLIC_KEY!;
+      const publicKey = importPublicKey(pem);
+      const encryptObj = {
+        email: data.email,
+        password: data.password,
+      }
+      const obj = {
         organizationName: data.organizationName,
         adminFullName: data.adminFullName,
-        email: data.email,
         phoneNumber: data.phoneNumber,
         nationalId: data.nationalId,
-        password: data.password,
 
+      }
+
+      console.log("obj", obj);
+
+      const payload = await encryptObject(encryptObj, publicKey);
+
+
+      const response = await axiosGlobal.post('/auth/register', {
+        payload,obj
       });
 
       const responseData = response.data;
@@ -101,7 +176,7 @@ export function AccountRegistrationModal({
         console.error('Registration error:', responseData);
       }
     } catch (error: any) {
-        toast.error(error.response.data.message); // Shows specific message
+      toast.error(error.response.data.message); // Shows specific message
 
     } finally {
       setIsSubmitting(false);
@@ -192,15 +267,48 @@ export function AccountRegistrationModal({
                   <FormItem>
                     <FormLabel>Email Address *</FormLabel>
                     <FormControl>
-                      <Input
-                        type="email"
-                        placeholder="admin@organization.edu"
-                        {...field}
-                      />
+                      <div className="flex space-x-2">
+                        <Input
+                          type="email"
+                          placeholder="admin@organization.edu"
+                          {...field}
+                          disabled={emailVerified}
+                        />
+                        {!emailVerified && (
+                          <Button
+                            type="button"
+                            onClick={sendOtp}
+                            disabled={isSendingOtp || !field.value}
+                            variant="outline"
+                          >
+                            {isSendingOtp ? 'Sending...' : 'Send OTP'}
+                          </Button>
+                        )}
+                        {emailVerified && (
+                          <Badge className="flex items-center">Verified</Badge>
+                        )}
+                      </div>
                     </FormControl>
                     <FormDescription>
                       This email will be used for login and system notifications
                     </FormDescription>
+                    {otpSent && !emailVerified && (
+                      <div className="mt-2 flex items-center space-x-2">
+                        <Input
+                          placeholder="Enter OTP"
+                          value={otpInputValue}
+                          onChange={(e) => setOtpInputValue(e.target.value)}
+                          className="w-32"
+                        />
+                        <Button
+                          type="button"
+                          onClick={verifyOtp}
+                          disabled={isVerifyingOtp}
+                        >
+                          {isVerifyingOtp ? 'Verifying...' : 'Verify'}
+                        </Button>
+                      </div>
+                    )}
                     <FormMessage />
                   </FormItem>
                 )}
@@ -306,7 +414,7 @@ export function AccountRegistrationModal({
               </Button>
               <Button
                 type="submit"
-                disabled={isSubmitting}
+                disabled={!emailVerified || isSubmitting}
                 className="flex-1"
               >
                 {isSubmitting ? (
