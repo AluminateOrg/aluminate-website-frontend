@@ -93,8 +93,6 @@ export function AccountRegistrationModal({
     },
   });
 
-<<<<<<< HEAD
-=======
   const sendOtp = async () => {
     const email = form.getValues('email');
     if (!email) {
@@ -148,8 +146,12 @@ export function AccountRegistrationModal({
     }
   };
 
->>>>>>> 929c393df258083d564fd7de1893669aa856a5d7
   const onSubmit = async (data: RegistrationFormData) => {
+    if (!emailVerified) {
+      toast.error('Please verify your email before creating account');
+      return;
+    }
+
     setIsSubmitting(true);
 
     try {
@@ -165,14 +167,6 @@ export function AccountRegistrationModal({
         adminFullName: data.adminFullName,
         phoneNumber: data.phoneNumber,
         nationalId: data.nationalId,
-<<<<<<< HEAD
-      };
-      const payload = await encryptObject(encryptObj, publicKey);
-
-      const response = await axiosGlobal.post("/auth/register", {
-        payload,
-        obj,
-=======
 
       }
 
@@ -185,7 +179,6 @@ export function AccountRegistrationModal({
 
       const response = await axiosGlobal.post('/auth/register', {
         payload,obj
->>>>>>> 929c393df258083d564fd7de1893669aa856a5d7
       });
 
       const responseData = response.data;
@@ -451,7 +444,11 @@ export function AccountRegistrationModal({
               >
                 Cancel
               </Button>
-              <Button type="submit" disabled={isSubmitting} className="flex-1">
+              <Button
+                type="submit"
+                disabled={!emailVerified || isSubmitting}
+                className="flex-1"
+              >
                 {isSubmitting ? (
                   <>
                     <Loader2 className="w-4 h-4 mr-2 animate-spin" />
