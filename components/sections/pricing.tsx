@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Card,
   CardContent,
@@ -12,69 +12,89 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Check, Crown, Star, Zap } from "lucide-react";
 import { AccountRegistrationModal } from "@/components/modals/account-registration-modal";
+import axiosGlobal from "../axiosInstances/axiosGlobal";
+import { toast } from "sonner";
 
-const plans = [
-  {
-    name: "Basic",
-    price: 18000,
-    description: "Perfect for small alumni groups and organizations",
-    icon: Zap,
-    popular: false,
-    memberLimit: "500 Members",
-    features: [
-      "Dedicated cloud instance",
-      "Member directory & profiles",
-      "Basic event management",
-      "Group messaging",
-      "Email notifications",
-      "Standard support",
-      "Mobile responsive design",
-      "5GB storage included",
-    ],
-  },
-  {
-    name: "Standard",
-    price: 30000,
-    description: "Ideal for growing alumni communities",
-    icon: Star,
-    popular: true,
-    memberLimit: "2,000 Members",
-    features: [
-      "Everything in Basic",
-      "Advanced event management",
-      "Mentorship directory",
-      "Fundraising integration",
-      "WhatsApp notifications",
-      "Bulk CSV onboarding",
-      "QR code check-ins",
-      "Priority support",
-      "25GB storage included",
-      "Custom branding options",
-    ],
-  },
-  {
-    name: "Premium",
-    price: 98000,
-    description: "Complete solution for large alumni networks",
-    icon: Crown,
-    popular: false,
-    memberLimit: "Unlimited Members",
-    features: [
-      "Everything in Standard",
-      "Advanced analytics dashboard",
-      "Multi-admin management",
-      "API access & integrations",
-      "Advanced security features",
-      "White-label solutions",
-      "Dedicated account manager",
-      "24/7 premium support",
-      "Unlimited storage",
-      "Custom feature development",
-    ],
-  },
-];
 
 export function Pricing() {
+
+  const [plans, setPlans] = useState<any[]>([]);
+  const FEATURE_MAP: Record<string, number> = {
+    backups: 1,
+    monitoring: 2,
+    prioritySupport: 3,
+  };
+
+  const getPlans = async () => {
+    try {
+      const { data } = await axiosGlobal.get('/public/subscription-plan');
+      if (!Array.isArray(data)) {
+        setPlans([]);
+        return;
+      }
+
+      const mapped = data.map((plan: any) => {
+        const featuresArr: string[] = [];
+        const storageGB = plan.storageInGB ?? plan.storageInGb ?? 0;
+        const cpu = plan.cpu ?? 1;
+        const ramGB = plan.ram ?? plan.ramGB ?? 1;
+        const durationMonths = plan.durationInMonths ?? 1;
+        const memberLimit = plan.memberLimit ?? 0;
+
+        featuresArr.push(`${storageGB} GB Storage`);
+        featuresArr.push(`${cpu} vCPU`);
+        featuresArr.push(`${ramGB} GB RAM`);
+        featuresArr.push(`${memberLimit} Members`);
+        featuresArr.push(`${durationMonths} month plan`);
+
+        (plan.subscriptionPlanFeatures || []).forEach((sf: any) => {
+          const backendFeatureId = sf?.planFeature?.id ?? sf.featureId;
+          const enabled = Boolean(sf.enabled);
+          if (!enabled) return;
+          if (backendFeatureId === FEATURE_MAP.backups) featuresArr.push("Automated Backups");
+          if (backendFeatureId === FEATURE_MAP.monitoring) featuresArr.push("Performance Monitoring");
+          if (backendFeatureId === FEATURE_MAP.prioritySupport) featuresArr.push("Priority Support");
+        });
+
+        const nameLower = String(plan.name || "").toLowerCase();
+        const icon = nameLower.includes("basic")
+          ? Zap
+          : nameLower.includes("premium")
+          ? Crown
+          : Star;
+
+        return {
+          id: String(plan?.id),
+          icon,
+          name: plan.name ?? "",
+          storageGB,
+          cpu,
+          ramGB,
+          maxMembers: memberLimit,
+          memberLimit: `${memberLimit} Members`,
+          durationMonths,
+          price: plan.price ?? 0,
+          features: featuresArr,
+          // keep original backend object in case it's needed
+          __raw: plan,
+        };
+      });
+
+      setPlans(mapped);
+
+    } catch (error) {
+
+      console.error("Error fetching plans:", error);
+      toast.error("Failed to load subscription plans. Please try again later.");
+      setPlans([]);
+
+    }
+  }
+
+
+  useEffect(() => {
+    getPlans();
+  }, []);
 
   return (
     <>
@@ -97,11 +117,10 @@ export function Pricing() {
             {plans.map((plan, index) => (
               <Card
                 key={index}
-                className={`relative group hover:shadow-xl transition-all duration-300 ${
-                  plan.popular
+                className={`relative group hover:shadow-xl transition-all duration-300 ${plan.popular
                     ? "border-accent shadow-lg scale-105"
                     : "hover:scale-105"
-                }`}
+                  }`}
               >
                 {plan.popular && (
                   <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
@@ -113,11 +132,10 @@ export function Pricing() {
 
                 <CardHeader className="text-center space-y-4">
                   <div
-                    className={`w-16 h-16 mx-auto rounded-full flex items-center justify-center ${
-                      plan.popular
+                    className={`w-16 h-16 mx-auto rounded-full flex items-center justify-center ${plan.popular
                         ? "bg-accent text-white"
                         : "bg-accent/10 text-accent"
-                    }`}
+                      }`}
                   >
                     <plan.icon className="w-8 h-8" />
                   </div>
@@ -146,7 +164,7 @@ export function Pricing() {
 
                 <CardContent className="space-y-6">
                   <ul className="space-y-3">
-                    {plan.features.map((feature, featureIndex) => (
+                    {plan.features.map((feature:any, featureIndex:any) => (
                       <li
                         key={featureIndex}
                         className="flex items-center space-x-3"
@@ -159,7 +177,7 @@ export function Pricing() {
                     ))}
                   </ul>
 
-                  
+
                 </CardContent>
               </Card>
             ))}
@@ -181,7 +199,7 @@ export function Pricing() {
         </div>
       </section>
 
-      
+
     </>
   );
 }

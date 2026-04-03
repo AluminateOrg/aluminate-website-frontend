@@ -314,13 +314,23 @@ export default function CheckoutPage() {
       // 3. Attach event listeners before calling `startPayment`
       const payhere = (window as any).payhere || {};
 
+      const planId = plan.id;
+
       // Avoid duplicated event listeners
-      payhere.onCompleted = async function (orderId: string) {
+      payhere.onCompleted = async function (orderId: string, planId: string) {
         console.log("Payment completed. Order ID:", orderId);
         toast.success("Payment completed successfully!");
         const {data} = await axiosGlobal.get(`/public/payment/verify/${orderId}`)
         if (data) {
           console.log("Verification data:", data);
+          try {
+            const response = await axiosGlobal.post('/public/payment/update-org', {
+            subscriptionPlanId: planId,
+          });
+          } catch (error) {
+            
+          }
+          
           toast.success("Status changed to ACTIVE. Redirecting...");
         } else {
           toast.error("Failed to verify payment status. Please contact support.");
