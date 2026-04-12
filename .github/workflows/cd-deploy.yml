@@ -21,13 +21,19 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Build Docker Image
+        env:
+          NEXT_PUBLIC_BACKEND_URL: ${{ secrets.NEXT_PUBLIC_BACKEND_URL }}
+          NEXT_PUBLIC_API_PREFIX: ${{ secrets.NEXT_PUBLIC_API_PREFIX }}
+          NEXT_PUBLIC_GLOBAL_PUBLIC_KEY: ${{ secrets.NEXT_PUBLIC_GLOBAL_PUBLIC_KEY }}
+          NEXT_PUBLIC_PAYHERE_MERCHANT_ID: ${{ secrets.NEXT_PUBLIC_PAYHERE_MERCHANT_ID }}
+          WEBSITE_FRONTEND_PORT: ${{ secrets.WEBSITE_FRONTEND_PORT }}
         run: |
           docker build --pull \
-            --build-arg NEXT_PUBLIC_BACKEND_URL=${{ secrets.NEXT_PUBLIC_BACKEND_URL }} \
-            --build-arg NEXT_PUBLIC_API_PREFIX=${{ secrets.NEXT_PUBLIC_API_PREFIX }} \
-            --build-arg NEXT_PUBLIC_GLOBAL_PUBLIC_KEY=${{ secrets.NEXT_PUBLIC_GLOBAL_PUBLIC_KEY }} \
-            --build-arg NEXT_PUBLIC_PAYHERE_MERCHANT_ID=${{ secrets.NEXT_PUBLIC_PAYHERE_MERCHANT_ID }} \
-            --build-arg WEBSITE_FRONTEND_PORT=${{ secrets.WEBSITE_FRONTEND_PORT }} \
+            --build-arg NEXT_PUBLIC_BACKEND_URL="$NEXT_PUBLIC_BACKEND_URL" \
+            --build-arg NEXT_PUBLIC_API_PREFIX="$NEXT_PUBLIC_API_PREFIX" \
+            --build-arg NEXT_PUBLIC_GLOBAL_PUBLIC_KEY="$NEXT_PUBLIC_GLOBAL_PUBLIC_KEY" \
+            --build-arg NEXT_PUBLIC_PAYHERE_MERCHANT_ID="$NEXT_PUBLIC_PAYHERE_MERCHANT_ID" \
+            --build-arg WEBSITE_FRONTEND_PORT="$WEBSITE_FRONTEND_PORT" \
             -t aluminate/website-frontend:${{ github.sha }} \
             -t aluminate/website-frontend:latest \
             .
