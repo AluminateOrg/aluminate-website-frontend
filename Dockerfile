@@ -4,30 +4,31 @@
 # --------------------------------------------------------------------------
 FROM node:20-alpine AS builder
 
-# 1. Install necessary build tools (Git for submodules)
-
-#RUN apk add --no-cache git
-
-# 2. Set the working directory
+# 1. Set the working directory
 WORKDIR /app
 
-# 3. Copy package files first for efficient caching
+# 2. Copy package files first for efficient caching
 COPY package.json package-lock.json ./
 
-# 4. Install dependencies
+# 3. Install dependencies
 RUN npm install
 
-# 5. Copy the rest of the application source code
+# 4. Copy the rest of the application source code
 COPY . .
 
-# 6. Initialize and update submodules if they are present within the context
+# 5. Declare all build-time arguments
+ARG NEXT_PUBLIC_BACKEND_URL
+ARG NEXT_PUBLIC_API_PREFIX
+ARG NEXT_PUBLIC_GLOBAL_PUBLIC_KEY
+ARG NEXT_PUBLIC_PAYHERE_MERCHANT_ID
 
-#RUN git submodule update --init --recursive
+# 6. Expose them as environment variables so Next.js picks them up at build time
+ENV NEXT_PUBLIC_BACKEND_URL=$NEXT_PUBLIC_BACKEND_URL
+ENV NEXT_PUBLIC_API_PREFIX=$NEXT_PUBLIC_API_PREFIX
+ENV NEXT_PUBLIC_GLOBAL_PUBLIC_KEY=$NEXT_PUBLIC_GLOBAL_PUBLIC_KEY
+ENV NEXT_PUBLIC_PAYHERE_MERCHANT_ID=$NEXT_PUBLIC_PAYHERE_MERCHANT_ID
 
 # 7. Build the application
-# Use ARG to ensure the build argument is passed correctly
-ARG NEXT_PUBLIC_BACKEND_URL
-ENV NEXT_PUBLIC_BACKEND_URL=$NEXT_PUBLIC_BACKEND_URL
 RUN npm run build
 
 # --------------------------------------------------------------------------
@@ -39,18 +40,16 @@ FROM node:20-alpine AS runner
 # 1. Set the working directory
 WORKDIR /app
 
-# 2. Skip dependency installation and copy build artifacts from the builder stage
-# Copy Next.js required files and build output
+# 2. Copy build artifacts from the builder stage
 COPY --from=builder /app/package.json ./package.json
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/.next ./.next
 COPY --from=builder /app/public ./public
 
-# 3. Expose the port defined in docker-compose.yml (via args)
-# The variable name is WEBSITE_FRONTEND_PORT in docker-compose.yml
+# 3. Declare and set the runtime port
 ARG WEBSITE_FRONTEND_PORT
 ENV PORT=$WEBSITE_FRONTEND_PORT
 EXPOSE $WEBSITE_FRONTEND_PORT
 
-# 4. Define the command to start the production server
+# 4. Start the production server
 CMD ["npm", "run", "start"]
