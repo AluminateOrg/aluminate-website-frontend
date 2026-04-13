@@ -305,7 +305,7 @@ export default function CheckoutPage() {
         email: userData.email || "email@domain.com",
         phone: "",       // optional
         address: "",     // optional
-        city: "",        // optional
+        city: "",        
         country: "Sri Lanka",
         custom_1: plan.id,  //add the plan id here
         custom_2: userData.email
